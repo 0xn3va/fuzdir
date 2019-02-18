@@ -1,3 +1,5 @@
+from src.utils.GeneratorUtils import thread_safe_generator
+
 
 class Wordlist:
 
@@ -22,6 +24,7 @@ class Wordlist:
     def __is_comment(self, line: str):
         return line.lstrip().startswith('#')
 
+    @thread_safe_generator
     def __iter__(self):
         with open(self.__wordlist_path, 'r') as wordlist_file:
             for line in wordlist_file:
