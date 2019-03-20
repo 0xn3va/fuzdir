@@ -19,6 +19,7 @@ class Requests:
                               retries: int = 3,
                               backoff_factor: float = 0.3,
                               status_forcelist: list = (500, 502, 504)):
+            # todo('Test retry')
             retry = Retry(
                 total=retries,
                 read=retries,
@@ -39,6 +40,7 @@ class Requests:
         if host is None:
             # todo('raise exception')
             pass
+        # todo('default port mb remove')
         port = parsed_url.port or Schemes.ports[scheme]
         path = parsed_url.path or '/'
         if not path.endswith('/'):
@@ -70,8 +72,7 @@ class Requests:
             headers = dict(self.headers)
             url = self._url + path
 
-            headers[
-                Headers.user_agent] = self._user_agent if self._user_agent is not None else UserAgents.random_ua()
+            headers[Headers.user_agent] = self._user_agent if self._user_agent is not None else UserAgents.random_ua()
 
             response = self._session.get(
                 url=url,
@@ -79,8 +80,8 @@ class Requests:
                 timeout=self._timeout,
                 verify=False
             )
-
-            print(response)
+            return response.status_code
+            #print(url, response.status_code)
         except requests.exceptions.TooManyRedirects as e:
             print('TooManyRedirects', str(e))
             pass
