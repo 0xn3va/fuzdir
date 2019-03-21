@@ -3,6 +3,7 @@ from requests.adapters import HTTPAdapter
 from urllib3 import Retry
 from urllib3.util import parse_url, Url
 
+from src.network.RequestException import RequestException
 from src.network.utils import Headers, Schemes
 from src.utils.UserAgents import UserAgents
 
@@ -19,7 +20,6 @@ class Requests:
                               retries: int = 3,
                               backoff_factor: float = 0.3,
                               status_forcelist: list = (500, 502, 504)):
-            # todo('Test retry')
             retry = Retry(
                 total=retries,
                 read=retries,
@@ -28,7 +28,6 @@ class Requests:
                 status_forcelist=status_forcelist,
             )
             adapter = HTTPAdapter(max_retries=retry)
-            # todo('Add handler')
             for s in Schemes.allowable:
                 session.mount('%s://' % (s,), adapter)
 
@@ -38,9 +37,9 @@ class Requests:
         scheme = parsed_url.scheme or Schemes.default
         host = parsed_url.host
         if host is None:
-            # todo('raise exception')
-            pass
-        # todo('default port mb remove')
+            # todo('add exception messages')
+            raise RequestException('')
+
         port = parsed_url.port or Schemes.ports[scheme]
         path = parsed_url.path or '/'
         if not path.endswith('/'):
@@ -81,7 +80,6 @@ class Requests:
                 verify=False
             )
             return response.status_code
-            #print(url, response.status_code)
         except requests.exceptions.TooManyRedirects as e:
             print('TooManyRedirects', str(e))
             pass
@@ -90,4 +88,5 @@ class Requests:
             pass
         except requests.exceptions.ConnectionError as e:
             print('ConnectionError', str(e))
-            pass
+            # todo('add exception message')
+            raise RequestException('')
