@@ -1,14 +1,16 @@
 from concurrent.futures import ThreadPoolExecutor, Future, TimeoutError
 
 from src.core.Wordlist import Wordlist
+from src.filter.Filter import Filter
 from src.network.Requests import Requests
 
 
 class Fuzzer:
-    def __init__(self, wordlist: Wordlist, requests: Requests, threads: int = 1):
+    def __init__(self, wordlist: Wordlist, requests: Requests, filter: Filter, threads: int = 1):
         self._wordlist = wordlist
-        self._max_threads = threads
         self._requests = requests
+        self._filter = filter
+        self._max_threads = threads
 
     def start(self):
         paths = iter(self._wordlist)
@@ -35,7 +37,7 @@ class Fuzzer:
                 return
 
         def request_done(future):
-            # todo('analyze future.result : request result')
+            # if self._filter.inspect(future.result) print ...
             request()
 
         for _ in range(self._max_threads):
