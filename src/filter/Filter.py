@@ -1,3 +1,5 @@
+from requests import Response
+
 from src.filter.Code import Code
 
 
@@ -8,6 +10,7 @@ class Filter:
 
     def __init__(self, conditions: str = '', invert: bool = False):
         self._conditions = []
+        self._invert = invert
 
         # -x code=200,301 : filter key
         # -v : invert key
@@ -27,3 +30,6 @@ class Filter:
             except KeyError:
                 # todo('raise exception')
                 return
+
+    def inspect(self, response: Response):
+        return any(self._invert != condition.match(response) for condition in self._conditions)
