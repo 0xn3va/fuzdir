@@ -1,11 +1,14 @@
 import requests
 from requests.adapters import HTTPAdapter
-from urllib3 import Retry
+from urllib3 import Retry, disable_warnings
+from urllib3.exceptions import InsecureRequestWarning
 from urllib3.util import parse_url, Url
 
 from src.network.RequestException import RequestException
 from src.network.utils import Headers, Schemes
 from src.utils.UserAgents import UserAgents
+
+disable_warnings(InsecureRequestWarning)
 
 
 class Requests:
