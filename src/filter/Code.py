@@ -10,7 +10,7 @@ class Code(Condition):
     def __init__(self):
         self._codes = []
 
-    def setup(self, *args):
+    def setup(self, args: list):
         try:
             self._codes = []
             for arg in args:

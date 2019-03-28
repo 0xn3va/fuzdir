@@ -5,7 +5,7 @@ from requests import Response
 
 class Condition(ABC):
     @abstractmethod
-    def setup(self, *args):
+    def setup(self, args: list):
         return
 
     @abstractmethod
