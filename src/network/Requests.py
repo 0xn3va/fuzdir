@@ -79,7 +79,7 @@ class Requests:
                 timeout=self._timeout,
                 verify=False
             )
-            return response.status_code
+            return response
         except requests.exceptions.TooManyRedirects as e:
             print('TooManyRedirects', str(e))
             pass
