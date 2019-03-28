@@ -39,7 +39,7 @@ class Fuzzer:
                 return
 
         def request_done(future):
-            response = future.result
+            response = future.result()
             if self._filter.inspect(response):
                 self._output.print_response(response)
             request()
