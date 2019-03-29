@@ -17,11 +17,10 @@ class Requests:
         Headers.cache_control: 'max-age=0',
     }
 
-    def __init__(self, url: str, cookie: str = None, user_agent: str = None, timeout: int = 5):
+    def __init__(self, url: str, cookie: str = None, user_agent: str = None, timeout: int = 5,
+                 allow_redirects: bool = False):
 
-        def add_retry_adapter(session,
-                              retries: int = 3,
-                              backoff_factor: float = 0.3,
+        def add_retry_adapter(session, retries: int = 3, backoff_factor: float = 0.3,
                               status_forcelist: list = (500, 502, 504)):
             retry = Retry(
                 total=retries,
@@ -69,6 +68,8 @@ class Requests:
         self._session = requests.Session()
         add_retry_adapter(self._session)
 
+        self._allow_redirects = allow_redirects
+
     def request(self, path: str):
         try:
             headers = dict(self.headers)
@@ -80,6 +81,7 @@ class Requests:
                 url=url,
                 headers=headers,
                 timeout=self._timeout,
+                allow_redirects=self._allow_redirects,
                 verify=False
             )
             return response
