@@ -1,7 +1,7 @@
 import threading
 import time
 
-from colorama import Fore, init
+from colorama import Fore, init, Style, Back
 from requests import Response
 from urllib3.util import parse_url
 
@@ -44,6 +44,10 @@ class CLIOutput:
             color = self._status_code_color.get(status, '')
 
             self._print_line(color + message)
+
+    def print_error(self, message):
+        with self._lock:
+            self._print_line(Style.BRIGHT + Fore.WHITE + Back.RED + message)
 
     def _print_line(self, line: str):
         print(line, flush=True)
