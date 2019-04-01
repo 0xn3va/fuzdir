@@ -12,11 +12,11 @@ class ArgumentParser:
         args = self.parse_args()
 
         if args.url is None:
-            # output.print_error('Target URL is missing, use -u <url>')
+            output.print_error('Target URL is missing, use -u <url>')
             exit(0)
 
         if args.wordlist is None:
-            # output.print_error('Wordlist is missing, use -w <path to wordlist>')
+            output.print_error('Wordlist is missing, use -w <path to wordlist>')
             exit(0)
 
         self.url = args.url
@@ -52,7 +52,8 @@ class ArgumentParser:
         request_group.add_argument('--user-agent', type=str, action='store', dest='user_agent',
                                    help='custom user agent, by default setting random user agent')
         request_group.add_argument('-c', '--cookie', type=str, action='store', dest='cookie')
-        request_group.add_argument('--allow-redirect', action='store_true', dest='allow_redirect')
+        request_group.add_argument('--allow-redirect', action='store_true', dest='allow_redirect',
+                                   help='allow follow up to redirection')
 
         filter_group = self._parser.add_argument_group('Filter')
         filter_group.add_argument('-x', type=str, action='store', dest='conditions',
