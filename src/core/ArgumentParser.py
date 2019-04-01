@@ -23,7 +23,8 @@ class ArgumentParser:
         self.wordlist = args.wordlist
         self.threads = args.threads
         self.timeout = args.timeout
-        self.extensions = args.extensions
+        self.extensions = [] if args.extensions is None else args.extensions.split(',')
+        self.extensions_file = args.extensions_file
         self.user_agent = args.user_agent
         self.cookie = args.cookie
         self.allow_redirect = args.allow_redirect
@@ -45,8 +46,10 @@ class ArgumentParser:
                                       help='connection timeout, by default %ds.' % (self._timeout_default,))
 
         wordlist_group = self._parser.add_argument_group('Wordlist Settings')
-        wordlist_group.add_argument('-e', '--extensions', action='store', dest='extensions',
-                                    help='extension list separated by comma or path to file with extensions')
+        wordlist_group.add_argument('-e', '--extensions', type=str, action='store', dest='extensions',
+                                    help='extension list separated by comma')
+        wordlist_group.add_argument('--ef', '--extensions-file', type=str, action='store', dest='extensions_file',
+                                    help='path to file with extensions')
 
         request_group = self._parser.add_argument_group('Request Settings')
         request_group.add_argument('--user-agent', type=str, action='store', dest='user_agent',
@@ -57,7 +60,7 @@ class ArgumentParser:
 
         filter_group = self._parser.add_argument_group('Filter')
         filter_group.add_argument('-x', type=str, action='store', dest='conditions',
-                                  metavar='condition1=args1;condition2=args2;',
+                                  metavar='condition1=args1;condition2=args2;', default='',
                                   help='conditions for responses matching')
         filter_group.add_argument('-v', action='store_true', dest='invert', help='select non-matching responses')
 
