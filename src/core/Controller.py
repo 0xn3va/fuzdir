@@ -12,7 +12,7 @@ class Controller:
 
         self._output = output
 
-        wordlist = Wordlist(wordlist_path=arg_parser.wordlist, extensions=arg_parser.extensions)
+        wordlist = Wordlist(wordlist_path=arg_parser.wordlist, extensions=arg_parser.extensions, extensions_file=arg_parser.extensions_file)
         requests = Requests(url=arg_parser.url,
                             cookie=arg_parser.cookie,
                             user_agent=arg_parser.user_agent,
