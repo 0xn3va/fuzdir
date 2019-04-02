@@ -12,6 +12,9 @@ class Filter:
         self._conditions = []
         self._invert = invert
 
+        if len(conditions) == 0:
+            return
+
         # -x code=200,301 : filter key
         # -v : invert key
 
@@ -32,4 +35,5 @@ class Filter:
                 return
 
     def inspect(self, response: Response):
-        return any(self._invert != condition.match(response) for condition in self._conditions)
+        return True if len(self._conditions) == 0 else any(
+            self._invert != condition.match(response) for condition in self._conditions)
