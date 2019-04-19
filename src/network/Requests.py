@@ -91,6 +91,8 @@ class Requests:
         except requests.exceptions.ConnectionError as e:
             # todo('Monitoring it')
             print('Connection error: %s' % (str(e),))
+            return None
         except requests.exceptions.RetryError as e:
             # todo('Monitoring it')
             print('Retry error: %s' % (str(e),))
+            return None

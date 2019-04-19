@@ -32,5 +32,7 @@ class Filter:
                 raise FilterError('Invalid conditions name: %s' % (name,))
 
     def inspect(self, response: Response):
+        if response is None:
+            return False
         return True if len(self._conditions) == 0 else any(
             self._invert != condition.match(response) for condition in self._conditions)
