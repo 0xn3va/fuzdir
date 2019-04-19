@@ -1,3 +1,0 @@
-
-class FilterException(Exception):
-    pass

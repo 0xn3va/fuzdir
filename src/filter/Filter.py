@@ -1,7 +1,7 @@
 from requests import Response
 
 from src.filter.Code import Code
-from src.filter.FilterException import FilterException
+from src.filter.FilterError import FilterError
 
 
 class Filter:
@@ -22,14 +22,14 @@ class Filter:
         for condition in conditions.split(';'):
             name_args = condition.split('=')
             if len(name_args) != 2:
-                raise FilterException('Invalid condition: %s' % (name_args, ))
+                raise FilterError('Invalid condition: %s' % (name_args,))
             name, args = name_args
             try:
                 handler = self.handlers[name]()
                 handler.setup(args.split(','))
                 self._conditions.append(handler)
             except KeyError:
-                raise FilterException('Invalid conditions name: %s' % (name, ))
+                raise FilterError('Invalid conditions name: %s' % (name,))
 
     def inspect(self, response: Response):
         return True if len(self._conditions) == 0 else any(

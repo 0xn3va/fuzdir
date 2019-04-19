@@ -1,7 +1,7 @@
 from requests import Response
 
 from src.filter.Condition import Condition
-from src.filter.FilterException import FilterException
+from src.filter.FilterError import FilterError
 
 
 class Code(Condition):
@@ -17,10 +17,10 @@ class Code(Condition):
             for arg in args:
                 code = int(arg)
                 if code < self._min_codes or code > self._max_codes:
-                    raise FilterException('Invalid HTTP status code: %s' % (code, ))
+                    raise FilterError('Invalid HTTP status code: %s' % (code,))
                 self._codes.append(code)
         except ValueError:
-            raise FilterException('HTTP status code must be a number')
+            raise FilterError('HTTP status code must be a number')
 
     def match(self, response: Response):
         return True if response.status_code in self._codes else False

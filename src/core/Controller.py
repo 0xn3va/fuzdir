@@ -2,7 +2,7 @@ from src.core.ArgumentParser import ArgumentParser
 from src.core.Fuzzer import Fuzzer
 from src.core.Wordlist import Wordlist
 from src.filter.Filter import Filter
-from src.filter.FilterException import FilterException
+from src.filter.FilterError import FilterError
 from src.network.RequestError import RequestError
 from src.network.Requests import Requests
 from src.output.CLIOutput import CLIOutput
@@ -24,7 +24,7 @@ class Controller:
             filter = Filter(conditions=arg_parser.conditions, invert=arg_parser.invert)
 
             self._fuzzer = Fuzzer(wordlist, requests, filter, output, threads=arg_parser.threads)
-        except (FilterException, FileExistsError, RequestError) as e:
+        except (FilterError, FileExistsError, RequestError) as e:
             self._output.print_error(str(e))
             exit(0)
 
