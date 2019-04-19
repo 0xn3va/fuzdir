@@ -4,7 +4,7 @@ from urllib3 import Retry, disable_warnings
 from urllib3.exceptions import InsecureRequestWarning
 from urllib3.util import parse_url, Url
 
-from src.network.RequestException import RequestException
+from src.network.RequestError import RequestError
 from src.network.utils import Headers, Schemes
 from src.utils.UserAgents import UserAgents
 
@@ -39,8 +39,7 @@ class Requests:
         scheme = parsed_url.scheme or Schemes.default
         host = parsed_url.host
         if host is None:
-            # todo('add exception messages')
-            raise RequestException('')
+            raise RequestError('Invalid url: %s' % (url,))
 
         port = parsed_url.port or Schemes.ports[scheme]
         path = parsed_url.path or '/'
@@ -86,12 +85,12 @@ class Requests:
             )
             return response
         except requests.exceptions.TooManyRedirects as e:
-            print('TooManyRedirects', str(e))
-            pass
-        except requests.exceptions.SSLError as e:
-            print('SSLError', str(e))
-            pass
+            raise RequestError('Too many redirects: %s' % (str(e),))
+        except requests.exceptions.SSLError:
+            raise RequestError('SSL error connection to server')
         except requests.exceptions.ConnectionError as e:
-            print('ConnectionError', str(e))
-            # todo('add exception message')
-            raise RequestException('')
+            # todo('Monitoring it')
+            print('Connection error: %s' % (str(e),))
+        except requests.exceptions.RetryError as e:
+            # todo('Monitoring it')
+            print('Retry error: %s' % (str(e),))
