@@ -1,6 +1,7 @@
 from requests import Response
 
 from src.filter.Code import Code
+from src.filter.FilterException import FilterException
 
 
 class Filter:
@@ -19,20 +20,16 @@ class Filter:
         # -v : invert key
 
         for condition in conditions.split(';'):
+            name_args = condition.split('=')
+            if len(name_args) != 2:
+                raise FilterException('Invalid condition: %s' % (name_args, ))
+            name, args = name_args
             try:
-                name_args = condition.split('=')
-                if len(name_args) != 2:
-                    # todo('raise exception')
-                    pass
-
-                name, args = name_args
-
                 handler = self.handlers[name]()
                 handler.setup(args.split(','))
                 self._conditions.append(handler)
             except KeyError:
-                # todo('raise exception')
-                return
+                raise FilterException('Invalid conditions name: %s' % (name, ))
 
     def inspect(self, response: Response):
         return True if len(self._conditions) == 0 else any(
