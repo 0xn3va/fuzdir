@@ -8,6 +8,8 @@ class Wordlist:
     pattern_symbol = '%'
 
     def __init__(self, wordlist_path: str, extensions: list, extensions_file: str):
+        if not isfile(wordlist_path):
+            raise FileExistsError('The wordlist file does not exist')
         self._wordlist_path = wordlist_path
         self._extensions = []
         self._set_extensions(extensions, extensions_file)
@@ -15,8 +17,7 @@ class Wordlist:
     def _set_extensions(self, extensions: list, extensions_file: str):
         if extensions_file is not None:
             if not isfile(extensions_file):
-                # todo('raise exception')
-                return
+                raise FileExistsError('The extensions file does not exist')
             with open(extensions_file, 'r') as file:
                 for line in file:
                     if self._is_comment(line):

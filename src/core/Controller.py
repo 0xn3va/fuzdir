@@ -23,7 +23,7 @@ class Controller:
             filter = Filter(conditions=arg_parser.conditions, invert=arg_parser.invert)
 
             self._fuzzer = Fuzzer(wordlist, requests, filter, output, threads=arg_parser.threads)
-        except FilterException as e:
+        except (FilterException, FileExistsError) as e:
             self._output.print_error(str(e))
             exit(0)
 
