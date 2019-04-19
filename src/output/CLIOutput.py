@@ -49,5 +49,8 @@ class CLIOutput:
         with self._lock:
             self._print_line(Style.BRIGHT + Fore.WHITE + Back.RED + message)
 
+    def print_banner(self, message):
+        self._print_line(Style.BRIGHT + Fore.MAGENTA + message + Style.RESET_ALL)
+
     def _print_line(self, line: str):
         print(line, flush=True)
