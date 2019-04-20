@@ -6,6 +6,7 @@ from urllib3.util import parse_url, Url
 
 from src.network.RequestError import RequestError
 from src.network.utils import Headers, Schemes
+from src.utils.Message import Message, MessageType
 from src.utils.UserAgents import UserAgents
 
 disable_warnings(InsecureRequestWarning)
@@ -21,7 +22,7 @@ class Requests:
                  allow_redirects: bool = False):
 
         def add_retry_adapter(session, retries: int = 3, backoff_factor: float = 0.3,
-                              status_forcelist: list = (500, 502, 504)):
+                              status_forcelist: list = (500, 502, 504,)):
             retry = Retry(
                 total=retries,
                 read=retries,
@@ -73,7 +74,7 @@ class Requests:
     def url(self):
         return self._url
 
-    def request(self, i, path: str):
+    def request(self, index: int, path: str):
         try:
             headers = dict(self.headers)
             url = self._url + path
@@ -87,16 +88,12 @@ class Requests:
                 allow_redirects=self._allow_redirects,
                 verify=False
             )
-            return i, response
+            return Message(MessageType.response, (index, response,))
         except requests.exceptions.TooManyRedirects as e:
             raise RequestError('Too many redirects: %s' % (str(e),))
         except requests.exceptions.SSLError:
             raise RequestError('SSL error connection to server')
-        except requests.exceptions.ConnectionError as e:
-            # todo('Monitoring it')
-            print('Connection error: %s' % (str(e),))
-            return i, None
+        except requests.exceptions.ConnectionError:
+            raise RequestError('Failed to establish a connection with %s' % (self._url,))
         except requests.exceptions.RetryError as e:
-            # todo('Monitoring it')
-            print('Retry error: %s' % (str(e),))
-            return i, None
+            return Message(MessageType.error, e)
