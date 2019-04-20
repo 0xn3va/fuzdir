@@ -68,5 +68,9 @@ class CLIOutput:
         target += Style.RESET_ALL
         self._print_line(target)
 
-    def _print_line(self, line: str):
-        print(line, flush=True)
+    def progress_bar(self, percent):
+        with self._lock:
+            self._print_line('%.2f%s' % (percent, '%', ), end='\r')
+
+    def _print_line(self, line: str, end: str = '\n'):
+        print(line, flush=True, end=end)

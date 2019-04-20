@@ -32,18 +32,19 @@ class Fuzzer:
 
         def request():
             try:
-                path = next(paths)
+                i, path = next(paths)
                 if result.cancelled():
                     result.set_result('Cancel')
                     return
-                future = executor.submit(task, path=path)
+                future = executor.submit(task, i=i, path=path)
                 future.add_done_callback(request_done)
             except StopIteration:
                 result.set_result('End')
                 return
 
         def request_done(future):
-            response = future.result()
+            i, response = future.result()
+            self._output.progress_bar(float(i) / float(self._wordlist.size) * 100)
             if self._filter.inspect(response):
                 self._output.print_response(response)
             request()

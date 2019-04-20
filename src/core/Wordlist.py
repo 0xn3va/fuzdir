@@ -45,15 +45,16 @@ class Wordlist:
 
     @thread_safe_generator
     def __iter__(self):
+        i = 0
         for line in self._read_file(self._wordlist_path):
             sample = line.rstrip()
-
+            i += 1
             for ext in self._extensions:
                 if self.pattern_symbol in ext:
                     # If extension contains template, will replace the pattern symbol by sample
-                    yield ext.replace(self.pattern_symbol, sample, 1)
+                    yield i, ext.replace(self.pattern_symbol, sample, 1)
                 else:
                     # else just join sample and extension
-                    yield '%s.%s' % (sample, ext,)
+                    yield i, '%s.%s' % (sample, ext,)
 
-            yield sample
+            yield i, sample
