@@ -14,6 +14,10 @@ class Fuzzer:
         self._output = output
         self._max_threads = threads
 
+    @property
+    def threads(self):
+        return self._max_threads
+
     def start(self):
         paths = iter(self._wordlist)
         task = self._requests.request

@@ -69,6 +69,10 @@ class Requests:
 
         self._allow_redirects = allow_redirects
 
+    @property
+    def url(self):
+        return self._url
+
     def request(self, path: str):
         try:
             headers = dict(self.headers)

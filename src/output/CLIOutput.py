@@ -52,5 +52,21 @@ class CLIOutput:
     def print_banner(self, message):
         self._print_line(Style.BRIGHT + Fore.MAGENTA + message + Style.RESET_ALL)
 
+    def print_config(self, extensions: str, threads: int, wordlist_size: int):
+        separator = Fore.MAGENTA + ' | ' + Fore.YELLOW
+        config = Style.BRIGHT + Fore.YELLOW
+        if len(extensions) > 0:
+            config += 'Extensions: %s%s' % (Fore.CYAN + extensions + Fore.YELLOW, separator,)
+        config += 'Threads: %s%s' % (Fore.CYAN + str(threads) + Fore.YELLOW, separator,)
+        config += 'Wordlist size: %s' % (Fore.CYAN + str(wordlist_size) + Fore.YELLOW,)
+        config += Style.RESET_ALL
+        self._print_line(config)
+
+    def print_target(self, url):
+        target = Style.BRIGHT + Fore.YELLOW
+        target += '\nTarget: {0}\n'.format(Fore.CYAN + url + Fore.YELLOW)
+        target += Style.RESET_ALL
+        self._print_line(target)
+
     def _print_line(self, line: str):
         print(line, flush=True)

@@ -18,11 +18,11 @@ VERSION = {
 
 class Controller:
 
+    printable_extensions_size = 6
+
     def __init__(self, banner_path: str, output: CLIOutput, arg_parser: ArgumentParser):
+        self._banner_path = banner_path
         self._output = output
-        with open(banner_path, 'r') as banner_file:
-            banner = banner_file.read()
-        banner = banner.format(**VERSION)
 
         try:
             wordlist = Wordlist(wordlist_path=arg_parser.wordlist, extensions=arg_parser.extensions, extensions_file=arg_parser.extensions_file)
@@ -32,12 +32,28 @@ class Controller:
                                 timeout=arg_parser.timeout,
                                 allow_redirects=arg_parser.allow_redirect)
             filter = Filter(conditions=arg_parser.conditions, invert=arg_parser.invert)
-
             self._fuzzer = Fuzzer(wordlist, requests, filter, output, threads=arg_parser.threads)
-            self._output.print_banner(banner)
+
+            self._print_banner()
+            self._print_config(wordlist.extensions, self._fuzzer.threads, wordlist.size)
+            self._output.print_target(requests.url)
         except (FilterError, FileExistsError, RequestError) as e:
             self._output.print_error(str(e))
             exit(0)
+
+    def _print_banner(self):
+        with open(self._banner_path, 'r') as banner_file:
+            banner = banner_file.read()
+        banner = banner.format(**VERSION)
+        self._output.print_banner(banner)
+
+    def _print_config(self, extensions, threads, wordlist_size):
+        es = len(extensions)
+        pes = self.printable_extensions_size
+        extensions_str = ', '.join(e for e in extensions[:pes if pes < es else es])
+        if pes < es:
+            extensions_str += '...'
+        self._output.print_config(extensions_str, threads, wordlist_size)
 
     def start(self):
         self._fuzzer.start()
