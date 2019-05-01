@@ -52,7 +52,7 @@ class Controller:
         pes = self.printable_extensions_size
         extensions_str = ', '.join(e for e in extensions[:pes if pes < es else es])
         if pes < es:
-            extensions_str += '...'
+            extensions_str += ', ...'
         self._output.print_config(extensions_str, threads, wordlist_size)
 
     def start(self):
