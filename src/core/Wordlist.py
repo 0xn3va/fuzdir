@@ -30,7 +30,7 @@ class Wordlist:
                 # Skip comments line
                 if self._is_comment(line):
                     continue
-                yield line
+                yield line.rstrip()
 
     def _is_comment(self, line: str):
         return line.lstrip().startswith('#')
@@ -39,22 +39,18 @@ class Wordlist:
     def extensions(self):
         return self._extensions
 
-    @property
-    def size(self):
+    def __len__(self):
         return self._wordlist_size * len(self._extensions) if len(self._extensions) > 0 else self._wordlist_size
 
     @thread_safe_generator
     def __iter__(self):
-        i = 0
-        for line in self._read_file(self._wordlist_path):
-            sample = line.rstrip()
-            i += 1
+        for sample in self._read_file(self._wordlist_path):
             for ext in self._extensions:
                 if self.pattern_symbol in ext:
                     # If extension contains template, will replace the pattern symbol by sample
-                    yield i, ext.replace(self.pattern_symbol, sample, 1)
+                    yield ext.replace(self.pattern_symbol, sample, 1)
                 else:
                     # else just join sample and extension
-                    yield i, '%s.%s' % (sample, ext,)
+                    yield '%s.%s' % (sample, ext,)
 
-            yield i, sample
+            yield sample
