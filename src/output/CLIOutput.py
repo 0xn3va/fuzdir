@@ -23,9 +23,12 @@ class CLIOutput:
     def __init__(self):
         init(autoreset=True)
         self._lock = threading.Lock()
+        self._last_line = False
 
     def print_response(self, response: Response):
         with self._lock:
+            if self._last_line:
+                return
             status = response.status_code
             path = parse_url(response.url).path
 
@@ -45,11 +48,13 @@ class CLIOutput:
 
             self._print_line(color + message)
 
-    def print_error(self, message):
+    def print_error(self, message: str, last: bool = False):
         with self._lock:
             self._print_line(Style.BRIGHT + Fore.WHITE + Back.RED + message + Style.RESET_ALL)
+            if last:
+                self._last_line = last
 
-    def print_banner(self, message):
+    def print_banner(self, message: str):
         self._print_line(Style.BRIGHT + Fore.MAGENTA + message + Style.RESET_ALL)
 
     def print_config(self, extensions: str, threads: int, wordlist_size: int):
@@ -62,14 +67,16 @@ class CLIOutput:
         config += Style.RESET_ALL
         self._print_line(config)
 
-    def print_target(self, url):
+    def print_target(self, url: str):
         target = Style.BRIGHT + Fore.YELLOW
         target += '\nTarget: {0}\n'.format(Fore.CYAN + url + Fore.YELLOW)
         target += Style.RESET_ALL
         self._print_line(target)
 
-    def progress_bar(self, percent):
+    def print_progress_bar(self, percent: float):
         with self._lock:
+            if self._last_line:
+                return
             self._print_line('%.2f%s' % (percent, '%', ), end='\r')
 
     def _print_line(self, line: str, end: str = '\n'):
