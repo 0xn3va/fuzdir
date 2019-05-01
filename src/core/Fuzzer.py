@@ -11,6 +11,7 @@ from src.utils.Message import MessageType
 class Fuzzer:
     def __init__(self, wordlist: Wordlist, requests: Requests, filter: Filter, output: CLIOutput, threads: int = 1):
         self._wordlist = wordlist
+        self._wordlist_len = len(self._wordlist)
         self._requests = requests
         self._filter = filter
         self._output = output
@@ -19,7 +20,8 @@ class Fuzzer:
             self._threads.add(threading.Thread(target=self._request))
         self._lock = threading.Lock()
         self._shutdown = False
-        self.paths = None
+        self._paths = None
+        self._index = 0
 
     @property
     def threads(self):
@@ -41,19 +43,21 @@ class Fuzzer:
                 if self._shutdown:
                     break
 
-                index, path = next(self.paths)
-                message = self._requests.request(index=index, path=path)
+                path = next(self._paths)
+                message = self._requests.request(path=path)
 
                 if message.type == MessageType.error:
                     # todo('Write to error log')
                     #print(message.body)
                     pass
                 else:
-                    index, response = message.body
+                    response = message.body
                     if self._filter.inspect(response):
                         self._output.print_response(response)
 
-                self._output.progress_bar(float(index) / float(self._wordlist.size) * 100)
+                with self._lock:
+                    self._index += 1
+                    self._output.print_progress_bar(float(self._index) / float(self._wordlist_len) * 100)
         except RequestError as e:
             self._shutdown = True
             self._output.print_error(str(e))
@@ -64,7 +68,8 @@ class Fuzzer:
     def start(self):
         try:
             self._shutdown = False
-            self.paths = iter(self._wordlist)
+            self._paths = iter(self._wordlist)
+            self._index = 0
 
             for thread in self._threads:
                 thread.start()
