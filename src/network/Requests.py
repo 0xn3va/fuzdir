@@ -74,7 +74,7 @@ class Requests:
     def url(self):
         return self._url
 
-    def request(self, index: int, path: str):
+    def request(self, path: str):
         try:
             headers = dict(self.headers)
             url = self._url + path
@@ -88,7 +88,7 @@ class Requests:
                 allow_redirects=self._allow_redirects,
                 verify=False
             )
-            return Message(MessageType.response, (index, response,))
+            return Message(MessageType.response, response)
         except requests.exceptions.TooManyRedirects as e:
             raise RequestError('Too many redirects: %s' % (str(e),))
         except requests.exceptions.SSLError:
