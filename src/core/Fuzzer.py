@@ -1,7 +1,8 @@
-from concurrent.futures import ThreadPoolExecutor, Future, TimeoutError, CancelledError
+import threading
 
 from src.core.Wordlist import Wordlist
 from src.filter.Filter import Filter
+from src.network.RequestError import RequestError
 from src.network.Requests import Requests
 from src.output.CLIOutput import CLIOutput
 from src.utils.Message import MessageType
@@ -13,54 +14,64 @@ class Fuzzer:
         self._requests = requests
         self._filter = filter
         self._output = output
-        self._max_threads = threads
+        self._threads = set()
+        for _ in range(threads):
+            self._threads.add(threading.Thread(target=self._request))
+        self._lock = threading.Lock()
+        self._shutdown = False
+        self.paths = None
 
     @property
     def threads(self):
-        return self._max_threads
+        return len(self._threads)
 
-    def start(self):
-        paths = iter(self._wordlist)
-        task = self._requests.request
-        result = Future()
+    @property
+    def _shutdown(self):
+        with self._lock:
+            return self._cancel
 
-        with ThreadPoolExecutor(max_workers=self._max_threads) as executor:
-            def request():
-                try:
-                    index, path = next(paths)
-                    future = executor.submit(task, index=index, path=path)
-                    future.add_done_callback(request_done)
-                except StopIteration:
-                    result.cancel()
-                    return
+    @_shutdown.setter
+    def _shutdown(self, shutdown: bool):
+        with self._lock:
+            self._cancel = shutdown
 
-            def request_done(future):
-                exception = future.exception()
-                if exception is not None:
-                    self._output.print_error(str(exception))
-                    result.cancel()
-                    return
-                message = future.result()
+    def _request(self):
+        try:
+            while True:
+                if self._shutdown:
+                    break
+
+                index, path = next(self.paths)
+                message = self._requests.request(index=index, path=path)
+
                 if message.type == MessageType.error:
                     # todo('Write to error log')
-                    print(message.body)
+                    #print(message.body)
+                    pass
                 else:
                     index, response = message.body
-                    self._output.progress_bar(float(index) / float(self._wordlist.size) * 100)
                     if self._filter.inspect(response):
                         self._output.print_response(response)
-                if not result.cancelled():
-                    request()
 
-            for _ in range(self._max_threads):
-                request()
+                self._output.progress_bar(float(index) / float(self._wordlist.size) * 100)
+        except RequestError as e:
+            self._shutdown = True
+            self._output.print_error(str(e))
+            return
+        except StopIteration:
+            return
 
-            try:
-                while not result.done():
-                    try:
-                        result.result(.2)
-                    except (TimeoutError, CancelledError):
-                        pass
-            except KeyboardInterrupt:
-                result.cancel()
-                return
+    def start(self):
+        try:
+            self._shutdown = False
+            self.paths = iter(self._wordlist)
+
+            for thread in self._threads:
+                thread.start()
+
+            for thread in self._threads:
+                thread.join()
+        except KeyboardInterrupt:
+            self._output.print_error('KeyboardInterrupt')
+            self._shutdown = True
+            return
