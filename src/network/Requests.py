@@ -22,7 +22,7 @@ class Requests:
                  allow_redirects: bool = False):
 
         def add_retry_adapter(session, retries: int = 3, backoff_factor: float = 0.3,
-                              status_forcelist: list = (500, 502, 504,)):
+                              status_forcelist: list = (502, 504,)):
             retry = Retry(
                 total=retries,
                 read=retries,
