@@ -50,6 +50,8 @@ class CLIOutput:
 
     def print_error(self, message: str, last: bool = False):
         with self._lock:
+            if self._last_line:
+                return
             self._print_line(Style.BRIGHT + Fore.WHITE + Back.RED + message + Style.RESET_ALL)
             if last:
                 self._last_line = last
