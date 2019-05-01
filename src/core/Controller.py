@@ -35,7 +35,7 @@ class Controller:
             self._fuzzer = Fuzzer(wordlist, requests, filter, output, threads=arg_parser.threads)
 
             self._print_banner()
-            self._print_config(wordlist.extensions, self._fuzzer.threads, wordlist.size)
+            self._print_config(wordlist.extensions, self._fuzzer.threads, len(wordlist))
             self._output.print_target(requests.url)
         except (FilterError, FileExistsError, RequestError) as e:
             self._output.print_error(str(e))
