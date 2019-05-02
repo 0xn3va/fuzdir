@@ -21,23 +21,21 @@ VERSION = {
 class Controller:
     _banner_file_name = 'banner.txt'
     _logs_path = 'logs'
-    _error_log_path_format = 'errors-%s'
+    _error_log_path_format = 'errors-%s.txt'
 
     printable_extensions_size = 6
 
     def __init__(self, root_path: str):
         self._banner_path = os.path.join(root_path, self._banner_file_name)
-        self._error_log_path = os.path.join(root_path,
-                                            self._logs_path,
-                                            self._error_log_path_format % (time.strftime('%y-%m-%d_%H-%M-%S'),))
+        error_log_path = os.path.join(root_path,
+                                      self._logs_path,
+                                      self._error_log_path_format % (time.strftime('%y-%m-%d_%H-%M-%S'),))
 
-        output = CLIOutput()
-        arg_parser = ArgumentParser(output=output)
-
-        self._output = output
-
+        arg_parser = ArgumentParser()
+        self._output = CLIOutput(error_log_path=error_log_path)
         try:
-            wordlist = Wordlist(wordlist_path=arg_parser.wordlist, extensions=arg_parser.extensions,
+            wordlist = Wordlist(wordlist_path=arg_parser.wordlist,
+                                extensions=arg_parser.extensions,
                                 extensions_file=arg_parser.extensions_file)
             requests = Requests(url=arg_parser.url,
                                 cookie=arg_parser.cookie,
@@ -45,28 +43,21 @@ class Controller:
                                 timeout=arg_parser.timeout,
                                 allow_redirects=arg_parser.allow_redirect)
             filter = Filter(conditions=arg_parser.conditions, invert=arg_parser.invert)
-            self._fuzzer = Fuzzer(wordlist, requests, filter, output, threads=arg_parser.threads)
+            self._fuzzer = Fuzzer(wordlist, requests, filter, threads=arg_parser.threads)
 
-            self._print_banner()
-            self._print_config(wordlist.extensions, self._fuzzer.threads, len(wordlist))
+            #
+            with open(self._banner_path, 'r') as banner_file:
+                banner = banner_file.read()
+            banner = banner.format(**VERSION)
+            self._output.print_banner(banner)
+            #
+            self._output.print_error_log_path()
+            self._output.print_config(wordlist.extensions, self._fuzzer.threads, len(wordlist))
             self._output.print_target(requests.url)
         except (FilterError, FileExistsError, RequestError) as e:
             self._output.print_error(str(e))
             exit(0)
 
-    def _print_banner(self):
-        with open(self._banner_path, 'r') as banner_file:
-            banner = banner_file.read()
-        banner = banner.format(**VERSION)
-        self._output.print_banner(banner)
-
-    def _print_config(self, extensions, threads, wordlist_size):
-        es = len(extensions)
-        pes = self.printable_extensions_size
-        extensions_str = ', '.join(e for e in extensions[:pes if pes < es else es])
-        if pes < es:
-            extensions_str += ', ...'
-        self._output.print_config(extensions_str, threads, wordlist_size)
-
     def start(self):
-        self._fuzzer.start()
+        with self._output as output:
+            self._fuzzer.start(output)

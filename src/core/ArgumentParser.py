@@ -1,22 +1,20 @@
 import argparse
 
-from src.output.CLIOutput import CLIOutput
-
 
 class ArgumentParser:
     _threads_default = 10
     _timeout_default = 5
 
-    def __init__(self, output: CLIOutput):
+    def __init__(self):
         self._parser = argparse.ArgumentParser()
         args = self.parse_args()
 
         if args.url is None:
-            output.print_error('Target URL is missing, use -u <url>')
+            print('Target URL is missing, use -u <url>')
             exit(0)
 
         if args.wordlist is None:
-            output.print_error('Wordlist is missing, use -w <path to wordlist>')
+            print('Wordlist is missing, use -w <path to wordlist>')
             exit(0)
 
         self.url = args.url

@@ -1,14 +1,14 @@
-import threading
 import time
 
-from colorama import Fore, init, Style, Back
+from colorama import Fore
 from requests import Response
 from urllib3.util import parse_url
 
 from src.network.utils import Headers
+from src.output.Output import Output
 
 
-class CLIOutput:
+class CLIOutput(Output):
     _message_format = '[%s] %d - %6d - %s'
     _redirect_message_format = '[%s] %d - %6d - %s  ->  %s'
     _status_code_color = {
@@ -20,15 +20,11 @@ class CLIOutput:
         403: Fore.BLUE
     }
 
-    def __init__(self):
-        init(autoreset=True)
-        self._lock = threading.Lock()
-        self._last_line = False
+    def __init__(self, error_log_path: str):
+        super(CLIOutput, self).__init__(error_log_path=error_log_path)
 
     def print_response(self, response: Response):
-        with self._lock:
-            if self._last_line:
-                return
+        with self._cli_lock:
             status = response.status_code
             path = parse_url(response.url).path
 
@@ -39,47 +35,15 @@ class CLIOutput:
                 content_length = len(response.content)
 
             if status in (301, 302, 307) and Headers.location in response.headers:
-                message = self._redirect_message_format % (
-                    time.strftime('%H:%M:%S'), status, content_length, path, response.headers[Headers.location])
+                message = self._redirect_message_format % (time.strftime('%H:%M:%S'),
+                                                           status,
+                                                           content_length,
+                                                           path,
+                                                           response.headers[Headers.location],)
             else:
-                message = self._message_format % (time.strftime('%H:%M:%S'), status, content_length, path,)
+                message = self._message_format % (time.strftime('%H:%M:%S'),
+                                                  status,
+                                                  content_length,
+                                                  path,)
 
-            color = self._status_code_color.get(status, '')
-
-            self._print_line(color + message)
-
-    def print_error(self, message: str, last: bool = False):
-        with self._lock:
-            if self._last_line:
-                return
-            self._print_line(Style.BRIGHT + Fore.WHITE + Back.RED + message + Style.RESET_ALL)
-            if last:
-                self._last_line = last
-
-    def print_banner(self, message: str):
-        self._print_line(Style.BRIGHT + Fore.MAGENTA + message + Style.RESET_ALL)
-
-    def print_config(self, extensions: str, threads: int, wordlist_size: int):
-        separator = Fore.MAGENTA + ' | ' + Fore.YELLOW
-        config = Style.BRIGHT + Fore.YELLOW
-        if len(extensions) > 0:
-            config += 'Extensions: %s%s' % (Fore.CYAN + extensions + Fore.YELLOW, separator,)
-        config += 'Threads: %s%s' % (Fore.CYAN + str(threads) + Fore.YELLOW, separator,)
-        config += 'Wordlist size: %s' % (Fore.CYAN + str(wordlist_size) + Fore.YELLOW,)
-        config += Style.RESET_ALL
-        self._print_line(config)
-
-    def print_target(self, url: str):
-        target = Style.BRIGHT + Fore.YELLOW
-        target += '\nTarget: {0}\n'.format(Fore.CYAN + url + Fore.YELLOW)
-        target += Style.RESET_ALL
-        self._print_line(target)
-
-    def print_progress_bar(self, percent: float):
-        with self._lock:
-            if self._last_line:
-                return
-            self._print_line('%.2f%s' % (percent, '%', ), end='\r')
-
-    def _print_line(self, line: str, end: str = '\n'):
-        print(line, flush=True, end=end)
+            self.print_line(self._status_code_color.get(status, '') + message)
