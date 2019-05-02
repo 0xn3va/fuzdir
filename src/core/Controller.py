@@ -1,3 +1,6 @@
+import os
+import time
+
 from src.core.ArgumentParser import ArgumentParser
 from src.core.Fuzzer import Fuzzer
 from src.core.Wordlist import Wordlist
@@ -6,7 +9,6 @@ from src.filter.FilterError import FilterError
 from src.network.RequestError import RequestError
 from src.network.Requests import Requests
 from src.output.CLIOutput import CLIOutput
-
 
 MAJOR_VERSION = 0
 MINOR_VERSION = 1
@@ -17,15 +19,26 @@ VERSION = {
 
 
 class Controller:
+    _banner_file_name = 'banner.txt'
+    _logs_path = 'logs'
+    _error_log_path_format = 'errors-%s'
 
     printable_extensions_size = 6
 
-    def __init__(self, banner_path: str, output: CLIOutput, arg_parser: ArgumentParser):
-        self._banner_path = banner_path
+    def __init__(self, root_path: str):
+        self._banner_path = os.path.join(root_path, self._banner_file_name)
+        self._error_log_path = os.path.join(root_path,
+                                            self._logs_path,
+                                            self._error_log_path_format % (time.strftime('%y-%m-%d_%H-%M-%S'),))
+
+        output = CLIOutput()
+        arg_parser = ArgumentParser(output=output)
+
         self._output = output
 
         try:
-            wordlist = Wordlist(wordlist_path=arg_parser.wordlist, extensions=arg_parser.extensions, extensions_file=arg_parser.extensions_file)
+            wordlist = Wordlist(wordlist_path=arg_parser.wordlist, extensions=arg_parser.extensions,
+                                extensions_file=arg_parser.extensions_file)
             requests = Requests(url=arg_parser.url,
                                 cookie=arg_parser.cookie,
                                 user_agent=arg_parser.user_agent,
