@@ -1,12 +1,12 @@
 from enum import Enum
 
 
-class MessageType(Enum):
+class ResponseType(Enum):
     response = 0,
     error = 1
 
 
-class Message:
-    def __init__(self, type: MessageType, body):
+class Response:
+    def __init__(self, type: ResponseType, body):
         self.type = type
         self.body = body

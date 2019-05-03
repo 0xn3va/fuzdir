@@ -6,7 +6,7 @@ from urllib3.util import parse_url, Url
 
 from src.network.RequestError import RequestError
 from src.network.utils import Headers, Schemes
-from src.utils.Message import Message, MessageType
+from src.network.Response import Response, ResponseType
 from src.utils.UserAgents import UserAgents
 
 disable_warnings(InsecureRequestWarning)
@@ -88,7 +88,7 @@ class Requests:
                 allow_redirects=self._allow_redirects,
                 verify=False
             )
-            return Message(MessageType.response, response)
+            return Response(ResponseType.response, response)
         except requests.exceptions.TooManyRedirects as e:
             raise RequestError('Too many redirects: %s' % (str(e),))
         except requests.exceptions.SSLError:
@@ -96,4 +96,4 @@ class Requests:
         except requests.exceptions.ConnectionError:
             raise RequestError('Failed to establish a connection with %s' % (self._url,))
         except requests.exceptions.RetryError as e:
-            return Message(MessageType.error, e)
+            return Response(ResponseType.error, e)
