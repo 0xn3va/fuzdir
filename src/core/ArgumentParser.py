@@ -35,6 +35,12 @@ class ArgumentParser:
         necessary_group.add_argument('-w', '--wordlist', type=str, action='store', dest='wordlist',
                                      help='path to wordlist')
 
+        wordlist_group = self._parser.add_argument_group('Wordlist Settings')
+        wordlist_group.add_argument('-e', '--extensions', type=str, action='store', dest='extensions',
+                                    help='extension list separated by comma')
+        wordlist_group.add_argument('--ef', '--extensions-file', type=str, action='store', dest='extensions_file',
+                                    help='path to file with extensions')
+
         connection_group = self._parser.add_argument_group('Connection Settings')
         connection_group.add_argument('-t', '--threads', type=int, action='store', dest='threads',
                                       default=self._threads_default,
@@ -42,12 +48,6 @@ class ArgumentParser:
         connection_group.add_argument('--timeout', type=int, action='store', dest='timeout',
                                       default=self._timeout_default,
                                       help='connection timeout, by default %ds.' % (self._timeout_default,))
-
-        wordlist_group = self._parser.add_argument_group('Wordlist Settings')
-        wordlist_group.add_argument('-e', '--extensions', type=str, action='store', dest='extensions',
-                                    help='extension list separated by comma')
-        wordlist_group.add_argument('--ef', '--extensions-file', type=str, action='store', dest='extensions_file',
-                                    help='path to file with extensions')
 
         request_group = self._parser.add_argument_group('Request Settings')
         request_group.add_argument('--user-agent', type=str, action='store', dest='user_agent',
