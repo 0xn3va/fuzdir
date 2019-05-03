@@ -1,5 +1,4 @@
-from os.path import isfile
-
+from src.utils.FileUtils import FileUtils
 from src.utils.GeneratorUtils import thread_safe_generator
 
 
@@ -7,8 +6,8 @@ class Wordlist:
     pattern_symbol = '%'
 
     def __init__(self, wordlist_path: str, extensions: list, extensions_file: str):
-        if not isfile(wordlist_path):
-            raise FileExistsError('The wordlist file does not exist')
+        if not FileUtils.is_readable(wordlist_path):
+            raise FileExistsError('The wordlist file does not exist or access denied')
         self._wordlist_path = wordlist_path
         self._wordlist_size = sum(1 for _ in self._read_file(self._wordlist_path))
         self._extensions = []
@@ -16,8 +15,8 @@ class Wordlist:
 
     def _set_extensions(self, extensions: list, extensions_file: str):
         if extensions_file is not None:
-            if not isfile(extensions_file):
-                raise FileExistsError('The extensions file does not exist')
+            if not FileUtils.is_readable(extensions_file):
+                raise FileExistsError('The extensions file does not exist or access denied')
             self._extensions.extend(self._read_file(extensions_file))
 
         for extension in extensions:
