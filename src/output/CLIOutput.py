@@ -24,26 +24,26 @@ class CLIOutput(Output):
         super(CLIOutput, self).__init__(error_log_path=error_log_path)
 
     def print_response(self, response: Response):
+        status = response.status_code
+        path = parse_url(response.url).path
+
+        try:
+            content_length = int(response.headers[Headers.content_length])
+        except (KeyError, ValueError):
+            # length of responses body
+            content_length = len(response.content)
+
+        if status in (301, 302, 307) and Headers.location in response.headers:
+            message = self._redirect_message_format % (time.strftime('%H:%M:%S'),
+                                                       status,
+                                                       content_length,
+                                                       path,
+                                                       response.headers[Headers.location],)
+        else:
+            message = self._message_format % (time.strftime('%H:%M:%S'),
+                                              status,
+                                              content_length,
+                                              path,)
+
         with self._cli_lock:
-            status = response.status_code
-            path = parse_url(response.url).path
-
-            try:
-                content_length = int(response.headers[Headers.content_length])
-            except (KeyError, ValueError):
-                # length of responses body
-                content_length = len(response.content)
-
-            if status in (301, 302, 307) and Headers.location in response.headers:
-                message = self._redirect_message_format % (time.strftime('%H:%M:%S'),
-                                                           status,
-                                                           content_length,
-                                                           path,
-                                                           response.headers[Headers.location],)
-            else:
-                message = self._message_format % (time.strftime('%H:%M:%S'),
-                                                  status,
-                                                  content_length,
-                                                  path,)
-
             self.print_line(self._status_code_color.get(status, '') + message)
