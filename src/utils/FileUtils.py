@@ -13,8 +13,7 @@ class FileUtils:
     def is_writable(path: str) -> bool:
         if not isinstance(path, str):
             return False
-        return os.path.isfile(path) and os.access(os.path.dirname(path), os.W_OK)
-
+        return os.access(os.path.dirname(path), os.W_OK) and not os.path.isdir(path)
 
     @staticmethod
     def is_readable(path: str) -> bool:
