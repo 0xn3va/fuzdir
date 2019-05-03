@@ -9,6 +9,8 @@ from src.filter.FilterError import FilterError
 from src.network.RequestError import RequestError
 from src.network.Requests import Requests
 from src.output.CLIOutput import CLIOutput
+from src.output.Output import Output
+from src.output.SplashType import SplashType
 
 MAJOR_VERSION = 0
 MINOR_VERSION = 1
@@ -23,8 +25,6 @@ class Controller:
     _logs_path = 'logs'
     _error_log_path_format = 'errors-%s.txt'
 
-    printable_extensions_size = 6
-
     def __init__(self, root_path: str):
         self._banner_path = os.path.join(root_path, self._banner_file_name)
         error_log_path = os.path.join(root_path,
@@ -32,8 +32,8 @@ class Controller:
                                       self._error_log_path_format % (time.strftime('%y-%m-%d_%H-%M-%S'),))
 
         arg_parser = ArgumentParser()
-        self._output = CLIOutput(error_log_path=error_log_path)
         try:
+            self._output = CLIOutput(error_log_path=error_log_path)
             wordlist = Wordlist(wordlist_path=arg_parser.wordlist,
                                 extensions=arg_parser.extensions,
                                 extensions_file=arg_parser.extensions_file)
@@ -49,13 +49,13 @@ class Controller:
             with open(self._banner_path, 'r') as banner_file:
                 banner = banner_file.read()
             banner = banner.format(**VERSION)
-            self._output.print_banner(banner)
+            self._output.print_splash(SplashType.banner, banner)
             #
-            self._output.print_error_log_path()
-            self._output.print_config(wordlist.extensions, self._fuzzer.threads, len(wordlist))
-            self._output.print_target(requests.url)
+            self._output.print_splash(SplashType.log_path)
+            self._output.print_splash(SplashType.config, wordlist.extensions, self._fuzzer.threads, len(wordlist))
+            self._output.print_splash(SplashType.target, requests.url)
         except (FilterError, FileExistsError, RequestError) as e:
-            self._output.print_error(str(e))
+            Output.print_line(Output.error_message_format % (str(e),))
             exit(0)
 
     def start(self):

@@ -1,5 +1,7 @@
 import argparse
 
+from src.output.Output import Output
+
 
 class ArgumentParser:
     _threads_default = 10
@@ -10,11 +12,11 @@ class ArgumentParser:
         args = self.parse_args()
 
         if args.url is None:
-            print('Target URL is missing, use -u <url>')
+            Output.print_line(Output.error_message_format % ('Target URL is missing, use -u <url>',))
             exit(0)
 
         if args.wordlist is None:
-            print('Wordlist is missing, use -w <path to wordlist>')
+            Output.print_line(Output.error_message_format % ('Wordlist is missing, use -w <path to wordlist>',))
             exit(0)
 
         self.url = args.url

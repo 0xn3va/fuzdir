@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 from colorama import init, Style, Fore, Back
 from requests import Response
 
+from src.output.MessageType import MessageType
+from src.output.SplashType import SplashType
 from src.utils.FileUtils import FileUtils
 
 
@@ -44,45 +46,57 @@ class Output(ABC):
     def print_response(self, response: Response):
         return NotImplemented
 
-    @staticmethod
-    def print_line(line: str, end: str = '\n', file=None):
-        print(line, flush=True, end=end, file=file)
+    def print_splash(self, splash_type: SplashType, *args):
+        if splash_type == SplashType.banner:
+            line = self._banner_format % (args[0],)
+        elif splash_type == SplashType.log_path:
+            line = self._error_log_format % (self._error_log_path,)
+        elif splash_type == SplashType.config:
+            extensions, threads, wordlist_size = args
+            line = ''
+            printable_extensions = extensions[:self._config_extensions_size] if self._config_extensions_size < len(extensions) else extensions
+            if len(printable_extensions) > 0:
+                extensions_value = self._config_extensions_separator.join(extension for extension in printable_extensions)
+                if len(printable_extensions) < len(extensions):
+                    extensions_value += self._config_extensions_padding
+                extensions_value = self._config_values_format % (extensions_value,)
+                line = self._config_extensions_format % (extensions_value, self._config_separator,)
+            threads_value = self._config_values_format % (str(threads),)
+            wordlist_value = self._config_values_format % (str(wordlist_size),)
+            line += self._config_threads_format % (threads_value, self._config_separator,)
+            line += self._config_wordlist_format % (wordlist_value,)
+            line = self._config_format % (line,)
+        else:
+            line = self._target_format % (self._target_url_format % (args[0],),)
+        self.print_line(line)
 
-    def print_banner(self, message: str):
-        self.print_line(self._banner_format % (message,))
-
-    def print_error_log_path(self):
-        self.print_line(self._error_log_format % (self._error_log_path,))
-
-    def print_config(self, extensions: list, threads: int, wordlist_size: int):
-        config = ''
-        printable_extensions = extensions[:self._config_extensions_size] if self._config_extensions_size < len(extensions) else extensions
-        if len(printable_extensions) > 0:
-            extensions_value = self._config_extensions_separator.join(extension for extension in printable_extensions)
-            if len(printable_extensions) < len(extensions):
-                extensions_value += self._config_extensions_padding
-            extensions_value = self._config_values_format % (extensions_value,)
-            config = self._config_extensions_format % (extensions_value, self._config_separator,)
-        threads_value = self._config_values_format % (str(threads),)
-        wordlist_value = self._config_values_format % (str(wordlist_size),)
-        config += self._config_threads_format % (threads_value, self._config_separator,)
-        config += self._config_wordlist_format % (wordlist_value,)
-        self.print_line(self._config_format % (config,))
-
-    def print_target(self, url: str):
-        self.print_line(self._target_format % (self._target_url_format % (url,),))
-
-    def print_error(self, message: str):
+    def progress_bar(self, percent: float):
         with self._cli_lock:
-            self.print_line(self.error_message_format % (message,))
+            self.print_line(self._progress_bar_format % (percent,), end='\r')
 
-    def print_error_log(self, message: str):
+    def print(self, message_type: MessageType, message: str):
+        if message_type == MessageType.log:
+            self._print_log(message)
+        elif message_type == MessageType.error:
+            self._print_error(message)
+        else:
+            self._print_info(message)
+
+    def _print_log(self, message: str):
         with self._log_lock:
             self.print_line(message, file=self._error_log)
 
-    def print_progress_bar(self, percent: float):
+    def _print_error(self, message: str):
         with self._cli_lock:
-            self.print_line(self._progress_bar_format % (percent,), end='\r')
+            self.print_line(self.error_message_format % (message,))
+
+    def _print_info(self, message: str):
+        with self._cli_lock:
+            self.print_line(message)
+
+    @staticmethod
+    def print_line(line: str, end: str = '\n', file=None):
+        print(line, flush=True, end=end, file=file)
 
     def __enter__(self):
         self._error_log = open(self._error_log_path, 'w')

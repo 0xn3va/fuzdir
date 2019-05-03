@@ -4,8 +4,9 @@ from src.core.Wordlist import Wordlist
 from src.filter.Filter import Filter
 from src.network.RequestError import RequestError
 from src.network.Requests import Requests
+from src.output.MessageType import MessageType
 from src.output.Output import Output
-from src.utils.Message import MessageType
+from src.network.Response import ResponseType
 
 
 class Fuzzer:
@@ -46,17 +47,17 @@ class Fuzzer:
                 message = self._requests.request(path=path)
                 if self._shutdown:
                     break
-                if message.type == MessageType.error:
-                    output.print_error_log(message.body)
+                if message.type == ResponseType.error:
+                    output.print(ResponseType.log, message.body)
                 else:
                     response = message.body
                     if self._filter.inspect(response):
                         output.print_response(response)
 
-                output.print_progress_bar(float(self._index_increment()) / float(self._wordlist_len) * 100)
+                output.progress_bar(float(self._index_increment()) / float(self._wordlist_len) * 100)
         except RequestError as e:
             self._shutdown = True
-            output.print_error(str(e))
+            output.print(MessageType.error, str(e))
             return
 
     def start(self, output: Output):
@@ -75,7 +76,7 @@ class Fuzzer:
                 thread.join()
         except KeyboardInterrupt:
             self._shutdown = True
-            output.print_error('KeyboardInterrupt')
+            output.print(MessageType.error, 'KeyboardInterrupt')
         finally:
             while any(thread.is_alive() for thread in threads):
                 try:
