@@ -1,3 +1,5 @@
+from requests import Response
+
 
 class Headers:
     accept_lang = 'Accept-Language'
@@ -16,3 +18,15 @@ class Schemes:
         allowable[1]: 443
     }
     default = allowable[0]
+
+
+class NetworkUtil:
+    @staticmethod
+    def content_length(response: Response) -> int:
+        if not isinstance(response, Response):
+            raise TypeError('Invalid response type')
+        try:
+            return int(response.headers[Headers.content_length])
+        except (KeyError, ValueError):
+            # length of responses body
+            return len(response.content)

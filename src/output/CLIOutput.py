@@ -4,7 +4,7 @@ from colorama import Fore
 from requests import Response
 from urllib3.util import parse_url
 
-from src.network.utils import Headers
+from src.network.utils import Headers, NetworkUtil
 from src.output.Output import Output
 
 
@@ -26,12 +26,7 @@ class CLIOutput(Output):
     def print_response(self, response: Response):
         status = response.status_code
         path = parse_url(response.url).path
-
-        try:
-            content_length = int(response.headers[Headers.content_length])
-        except (KeyError, ValueError):
-            # length of responses body
-            content_length = len(response.content)
+        content_length = NetworkUtil.content_length(response)
 
         if status in (301, 302, 307) and Headers.location in response.headers:
             message = self._redirect_message_format % (time.strftime('%H:%M:%S'),
