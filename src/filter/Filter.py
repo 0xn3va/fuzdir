@@ -1,6 +1,6 @@
 from requests import Response
 
-from src.filter.Code import Code
+from src.filter.conditions.Code import Code
 from src.filter.FilterError import FilterError
 
 
