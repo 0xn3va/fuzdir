@@ -2,11 +2,13 @@ from requests import Response
 
 from src.filter.conditions.Code import Code
 from src.filter.FilterError import FilterError
+from src.filter.conditions.ContentLength import ContentLength
 
 
 class Filter:
     handlers = {
-        'code': Code
+        'code': Code,
+        'length': ContentLength
     }
 
     _conditions_separator = ';'
@@ -36,6 +38,7 @@ class Filter:
             try:
                 handler = self.handlers[name.split(self._name_separator)[0]]()
                 handler.setup(args)
+                # todo('Add conditions sort by priority')
                 self._conditions.append((invert, handler))
             except KeyError:
                 raise FilterError('Invalid conditions name: %s' % (name,))
