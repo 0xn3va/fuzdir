@@ -60,8 +60,7 @@ class ArgumentParser:
 
         filter_group = self._parser.add_argument_group('Filter')
         filter_group.add_argument('-x', type=str, action='store', dest='conditions',
-                                  metavar='condition1=args1;condition2=args2;', default='',
-                                  help='conditions for responses matching')
-        filter_group.add_argument('-v', action='store_true', dest='invert', help='select non-matching responses')
+                                  metavar='condition1=args1;invert:condition2=args2;condition3:cond_args3=args3;',
+                                  default='', help='conditions for responses matching')
 
         return self._parser.parse_args()

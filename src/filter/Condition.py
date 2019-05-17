@@ -4,8 +4,10 @@ from requests import Response
 
 
 class Condition(ABC):
+    args_separator = ','
+
     @abstractmethod
-    def setup(self, args: list):
+    def setup(self, args: str):
         return
 
     @abstractmethod
