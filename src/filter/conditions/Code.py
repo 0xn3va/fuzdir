@@ -1,7 +1,8 @@
 from requests import Response
 
-from src.filter.Condition import Condition
+from src.filter.conditions.Condition import Condition
 from src.filter.FilterError import FilterError
+from src.filter.conditions.ConditionPriority import ConditionPriority
 
 
 class Code(Condition):
@@ -9,6 +10,7 @@ class Code(Condition):
     _max_codes = 599
 
     def __init__(self):
+        super(Code, self).__init__(ConditionPriority.high)
         self._codes = []
 
     def setup(self, args: str):
