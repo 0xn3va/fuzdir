@@ -9,7 +9,7 @@ class ContentLength(Condition):
     _length_separator = '-'
 
     def __init__(self):
-        super(ContentLength, self).__init__(ConditionPriority.low)
+        super(ContentLength, self).__init__(ConditionPriority.medium)
         self._ranges = []
 
     def setup(self, args: str):
