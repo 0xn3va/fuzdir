@@ -29,7 +29,6 @@ class ArgumentParser:
         self.cookie = args.cookie
         self.allow_redirect = args.allow_redirect
         self.conditions = args.conditions
-        self.invert = args.invert
 
     def parse_args(self):
         necessary_group = self._parser.add_argument_group('Necessary Parameters')
