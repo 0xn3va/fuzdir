@@ -2,7 +2,7 @@ from requests import Response
 
 from src.filter.conditions.Condition import Condition
 from src.filter.FilterError import FilterError
-from src.filter.conditions.ConditionPriority import ConditionPriority
+from src.filter.ConditionPriority import ConditionPriority
 
 
 class Code(Condition):
@@ -13,10 +13,10 @@ class Code(Condition):
         super(Code, self).__init__(ConditionPriority.high)
         self._codes = []
 
-    def setup(self, args: str):
+    def setup(self, condition_args: str, handler_args: str = ''):
         try:
             self._codes = []
-            for arg in args.split(self.args_separator):
+            for arg in condition_args.split(self._args_separator):
                 code = int(arg)
                 if code < self._min_codes or code > self._max_codes:
                     raise FilterError('Invalid HTTP status code: %s' % (code,))

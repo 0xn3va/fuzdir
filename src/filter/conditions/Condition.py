@@ -2,17 +2,17 @@ from abc import ABC, abstractmethod
 
 from requests import Response
 
-from src.filter.conditions.ConditionPriority import ConditionPriority
+from src.filter.ConditionPriority import ConditionPriority
 
 
 class Condition(ABC):
-    args_separator = ','
+    _args_separator = ','
 
     def __init__(self, priority: ConditionPriority):
         self._priority = priority
 
     @abstractmethod
-    def setup(self, args: str):
+    def setup(self, condition_args: str, handler_args: str = ''):
         return
 
     @abstractmethod

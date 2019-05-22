@@ -3,16 +3,18 @@ from requests import Response
 from src.filter.conditions.Code import Code
 from src.filter.FilterError import FilterError
 from src.filter.conditions.ContentLength import ContentLength
+from src.filter.conditions.Grep import Grep
 
 
 class Filter:
     handlers = {
         'code': Code,
-        'length': ContentLength
+        'length': ContentLength,
+        'grep': Grep
     }
 
     _conditions_separator = ';'
-    _name_separator = ':'
+    _handler_separator = ':'
     _args_separator = '='
     _invert_key = 'invert'
 
@@ -26,22 +28,27 @@ class Filter:
         # -x code=200,301 : filter key
         # -v : invert key (dep)
 
+        # -x handler=args - condition
+
         for condition in conditions.split(self._conditions_separator):
-            condition_name, _, args = condition.partition(self._args_separator)
-            if len(args) < 1:
+            handler, _, condition_args = condition.partition(self._args_separator)
+            if len(condition_args) < 1:
                 raise FilterError('Invalid condition: %s' % (condition,))
 
-            invert, _, name_args = condition_name.partition(self._name_separator)
-            invert = (invert == self._invert_key)
-            name = name_args if not invert else condition_name
+            head, _, tail = handler.partition(self._handler_separator)
+            invert = (head == self._invert_key)
+            if invert:
+                handler = tail
+
+            handler_name, _, handler_args = handler.partition(self._handler_separator)
 
             try:
-                handler = self.handlers[name.split(self._name_separator)[0]]()
-                handler.setup(args)
+                handler = self.handlers[handler_name]()
+                handler.setup(condition_args, handler_args)
                 # todo('Add conditions sort by priority')
                 self._conditions.append((invert, handler))
             except KeyError:
-                raise FilterError('Invalid conditions name: %s' % (name,))
+                raise FilterError('Invalid conditions name: %s' % (handler_name,))
 
     def inspect(self, response: Response):
         if response is None:

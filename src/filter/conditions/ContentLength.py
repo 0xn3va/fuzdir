@@ -1,7 +1,8 @@
+from requests import Response
+
 from src.filter.FilterError import FilterError
 from src.filter.conditions.Condition import Condition
-from src.filter.conditions.ConditionPriority import ConditionPriority
-from src.network.Response import Response
+from src.filter.ConditionPriority import ConditionPriority
 from src.network.utils import NetworkUtil
 
 
@@ -12,15 +13,15 @@ class ContentLength(Condition):
         super(ContentLength, self).__init__(ConditionPriority.medium)
         self._ranges = []
 
-    def setup(self, args: str):
+    def setup(self, condition_args: str, handler_args: str = ''):
         try:
-            for arg in args.split(self.args_separator):
+            for arg in condition_args.split(self._args_separator):
                 lengths = [length for length in map(int, arg.split(self._length_separator))]
                 if len(lengths) > 2 or any(length < 0 for length in lengths):
-                    raise FilterError('Invalid content length range %s' % (args,))
+                    raise FilterError('Invalid content length range %s' % (condition_args,))
                 self._ranges.append(lengths)
         except ValueError:
-            raise FilterError('Incorrect content length %s' % (args,))
+            raise FilterError('Incorrect content length %s' % (condition_args,))
 
     def match(self, response: Response):
         def _match(length_range, content_length):
