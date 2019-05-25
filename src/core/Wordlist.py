@@ -3,7 +3,7 @@ from src.utils.GeneratorUtils import thread_safe_generator
 
 
 class Wordlist:
-    pattern_symbol = '%'
+    pattern_symbol = b'%'
 
     def __init__(self, wordlist_path: str, extensions: list, extensions_file: str):
         if not FileUtils.is_readable(wordlist_path):
@@ -20,19 +20,20 @@ class Wordlist:
             self._extensions.extend(self._read_file(extensions_file))
 
         for extension in extensions:
+            extension = extension.encode()
             if extension not in self._extensions:
                 self._extensions.append(extension)
 
     def _read_file(self, path):
-        with open(path, 'r') as file:
+        with open(path, 'rb') as file:
             for line in file:
                 # Skip comments line
                 if self._is_comment(line):
                     continue
                 yield line.rstrip()
 
-    def _is_comment(self, line: str):
-        return line.lstrip().startswith('#')
+    def _is_comment(self, line: bytes):
+        return line.lstrip().decode(errors='replace').startswith('#')
 
     @property
     def extensions(self):
@@ -42,7 +43,7 @@ class Wordlist:
         return self._wordlist_size * len(self._extensions) if len(self._extensions) > 0 else self._wordlist_size
 
     @thread_safe_generator
-    def __iter__(self):
+    def __iter__(self) -> bytes:
         for sample in self._read_file(self._wordlist_path):
             for ext in self._extensions:
                 if self.pattern_symbol in ext:
@@ -50,6 +51,6 @@ class Wordlist:
                     yield ext.replace(self.pattern_symbol, sample, 1)
                 else:
                     # else just join sample and extension
-                    yield '%s.%s' % (sample, ext,)
+                    yield b'%b.%b' % (sample, ext,)
 
             yield sample

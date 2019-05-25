@@ -55,7 +55,7 @@ class Requests:
                   query=parsed_url.query,
                   fragment=parsed_url.fragment)
 
-        self._url = url.url
+        self._url = url.url.encode()
         #
         self.headers[Headers.host] = '%s:%d' % (host, port,) if port != Schemes.ports[scheme] else host
         #
@@ -72,7 +72,7 @@ class Requests:
 
     @property
     def url(self):
-        return self._url
+        return self._url.decode()
 
     def request(self, path: str):
         try:
@@ -94,6 +94,6 @@ class Requests:
         except requests.exceptions.SSLError:
             raise RequestError('SSL error connection to server')
         except requests.exceptions.ConnectionError:
-            raise RequestError('Failed to establish a connection with %s' % (self._url,))
+            raise RequestError('Failed to establish a connection with %s' % (self.url,))
         except requests.exceptions.RetryError as e:
             return Response(ResponseType.error, e)
