@@ -45,10 +45,11 @@ class Filter:
             try:
                 handler = self.handlers[handler_name]()
                 handler.setup(condition_args, handler_args)
-                # todo('Add conditions sort by priority')
                 self._conditions.append((invert, handler))
             except KeyError:
                 raise FilterError('Invalid conditions name: %s' % (handler_name,))
+
+        self._conditions.sort(key=lambda c: c[-1].priority.value, reverse=True)
 
     def inspect(self, response: Response):
         if response is None:

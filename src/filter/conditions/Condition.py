@@ -9,7 +9,7 @@ class Condition(ABC):
     _args_separator = ','
 
     def __init__(self, priority: ConditionPriority):
-        self._priority = priority
+        self.priority = priority
 
     @abstractmethod
     def setup(self, condition_args: str, handler_args: str = ''):
