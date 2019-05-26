@@ -16,7 +16,7 @@ class Filter:
     _conditions_separator = ';'
     _handler_separator = ':'
     _args_separator = '='
-    _invert_key = 'invert'
+    _ignore_key = 'ignore'
 
     def __init__(self, conditions: str = ''):
         self._conditions = []
@@ -24,20 +24,14 @@ class Filter:
         if len(conditions) == 0:
             return
 
-        # -x invert:code=200,301 : filter key
-        # -x code=200,301 : filter key
-        # -v : invert key (dep)
-
-        # -x handler=args - condition
-
         for condition in conditions.split(self._conditions_separator):
             handler, _, condition_args = condition.partition(self._args_separator)
             if len(condition_args) < 1:
                 raise FilterError('Invalid condition: %s' % (condition,))
 
             head, _, tail = handler.partition(self._handler_separator)
-            invert = (head == self._invert_key)
-            if invert:
+            ignore = (head == self._ignore_key)
+            if ignore:
                 handler = tail
 
             handler_name, _, handler_args = handler.partition(self._handler_separator)
@@ -45,7 +39,7 @@ class Filter:
             try:
                 handler = self.handlers[handler_name]()
                 handler.setup(condition_args, handler_args)
-                self._conditions.append((invert, handler))
+                self._conditions.append((ignore, handler))
             except KeyError:
                 raise FilterError('Invalid conditions name: %s' % (handler_name,))
 
