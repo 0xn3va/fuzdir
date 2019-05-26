@@ -4,6 +4,7 @@ from src.utils.GeneratorUtils import thread_safe_generator
 
 class Wordlist:
     pattern_symbol = b'%'
+    _comment_symbol = b'#'
 
     def __init__(self, wordlist_path: str, extensions: list, extensions_file: str):
         if not FileUtils.is_readable(wordlist_path):
@@ -27,13 +28,17 @@ class Wordlist:
     def _read_file(self, path):
         with open(path, 'rb') as file:
             for line in file:
+                line = line.strip()
                 # Skip comments line
                 if self._is_comment(line):
                     continue
-                yield line.rstrip()
+                yield line
 
     def _is_comment(self, line: bytes):
-        return line.lstrip().decode(errors='replace').startswith('#')
+        try:
+            return line[0] == self._comment_symbol
+        except IndexError:
+            return False
 
     @property
     def extensions(self):
