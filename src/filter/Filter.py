@@ -48,4 +48,4 @@ class Filter:
     def inspect(self, response: Response):
         if response is None:
             return False
-        return True if len(self._conditions) == 0 else any(condition[0] != condition[1].match(response) for condition in self._conditions)
+        return True if len(self._conditions) == 0 else all(condition[0] != condition[1].match(response) for condition in self._conditions)
