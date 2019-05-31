@@ -1,6 +1,6 @@
-from src.utils.EncodingUtils import EncodingUtils
 from src.utils.FileUtils import FileUtils
 from src.utils.GeneratorUtils import thread_safe_generator
+from src.wordlist.Encoding import Encoding
 
 
 class Wordlist:
@@ -33,7 +33,7 @@ class Wordlist:
                 # Skip comments line
                 if self._is_comment(line):
                     continue
-                yield EncodingUtils.decode(line)
+                yield Encoding.decode(line)
 
     def _is_comment(self, line: bytes):
         try:
@@ -53,10 +53,8 @@ class Wordlist:
         for sample in self._read_file(self._wordlist_path):
             for ext in self._extensions:
                 if self.pattern_symbol in ext:
-                    # If extension contains template, will replace the pattern symbol by sample
                     yield ext.replace(self.pattern_symbol, sample, 1)
                 else:
-                    # else just join sample and extension
                     yield '%s.%s' % (sample, ext,)
 
             yield sample
