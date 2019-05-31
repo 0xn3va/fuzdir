@@ -49,7 +49,7 @@ class Wordlist:
         return self._wordlist_size * len(self._extensions) if len(self._extensions) > 0 else self._wordlist_size
 
     @thread_safe_generator
-    def __iter__(self) -> bytes:
+    def __iter__(self) -> str:
         for sample in self._read_file(self._wordlist_path):
             for ext in self._extensions:
                 if self.pattern_symbol in ext:

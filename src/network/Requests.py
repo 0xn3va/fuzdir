@@ -55,7 +55,7 @@ class Requests:
                   query=parsed_url.query,
                   fragment=parsed_url.fragment)
 
-        self._url = url.url.encode()
+        self._url = url.url
         #
         self.headers[Headers.host] = '%s:%d' % (host, port,) if port != Schemes.ports[scheme] else host
         #
@@ -72,7 +72,7 @@ class Requests:
 
     @property
     def url(self):
-        return self._url.decode()
+        return self._url
 
     def request(self, path: str):
         try:
