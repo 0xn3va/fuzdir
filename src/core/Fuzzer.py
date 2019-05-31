@@ -1,6 +1,6 @@
 import threading
 
-from src.core.Wordlist import Wordlist
+from src.wordlist.Wordlist import Wordlist
 from src.filter.Filter import Filter
 from src.network.RequestError import RequestError
 from src.network.Requests import Requests
@@ -67,7 +67,7 @@ class Fuzzer:
                 if self._canceled():
                     break
                 if message.type == ResponseType.error:
-                    output.print(ResponseType.log, message.body)
+                    output.print(MessageType.log, message.body)
                 else:
                     response = message.body
                     if self._filter.inspect(response):
