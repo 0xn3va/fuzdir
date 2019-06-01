@@ -22,7 +22,6 @@ class Wordlist:
             self._extensions.extend(self._read_file(extensions_file))
 
         for extension in extensions:
-            extension = extension.encode()
             if extension not in self._extensions:
                 self._extensions.append(extension)
 
