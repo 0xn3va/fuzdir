@@ -1,9 +1,10 @@
 from src.utils.FileUtils import FileUtils
 from src.utils.GeneratorUtils import thread_safe_generator
+from src.wordlist.Encoding import Encoding
 
 
 class Wordlist:
-    pattern_symbol = b'%'
+    pattern_symbol = '%'
     _comment_symbol = b'#'
 
     def __init__(self, wordlist_path: str, extensions: list, extensions_file: str):
@@ -21,7 +22,6 @@ class Wordlist:
             self._extensions.extend(self._read_file(extensions_file))
 
         for extension in extensions:
-            extension = extension.encode()
             if extension not in self._extensions:
                 self._extensions.append(extension)
 
@@ -32,7 +32,7 @@ class Wordlist:
                 # Skip comments line
                 if self._is_comment(line):
                     continue
-                yield line
+                yield Encoding.decode(line)
 
     def _is_comment(self, line: bytes):
         try:
@@ -48,14 +48,12 @@ class Wordlist:
         return self._wordlist_size * len(self._extensions) if len(self._extensions) > 0 else self._wordlist_size
 
     @thread_safe_generator
-    def __iter__(self) -> bytes:
+    def __iter__(self) -> str:
         for sample in self._read_file(self._wordlist_path):
             for ext in self._extensions:
                 if self.pattern_symbol in ext:
-                    # If extension contains template, will replace the pattern symbol by sample
                     yield ext.replace(self.pattern_symbol, sample, 1)
                 else:
-                    # else just join sample and extension
-                    yield b'%b.%b' % (sample, ext,)
+                    yield '%s.%s' % (sample, ext,)
 
             yield sample
