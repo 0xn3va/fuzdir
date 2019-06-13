@@ -1,9 +1,4 @@
-from enum import Enum
-
-
-class ResponseType(Enum):
-    response = 0
-    error = 1
+from src.network.response.ResponseType import ResponseType
 
 
 class Response:

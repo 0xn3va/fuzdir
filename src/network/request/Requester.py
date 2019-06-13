@@ -5,6 +5,7 @@ from urllib3.exceptions import InsecureRequestWarning
 from urllib3.util import parse_url, Url
 
 from src.network.RequestError import RequestError
+from src.network.Throttle import Throttle
 from src.network.utils import Headers, Schemes
 from src.network.Response import Response, ResponseType
 from src.utils.UserAgents import UserAgents
@@ -12,7 +13,7 @@ from src.utils.UserAgents import UserAgents
 disable_warnings(InsecureRequestWarning)
 
 
-class Requests:
+class Requester:
     headers = {
         Headers.accept_lang: 'en-us',
         Headers.cache_control: 'max-age=0',
@@ -70,11 +71,20 @@ class Requests:
 
         self._allow_redirects = allow_redirects
 
+        self._throttle = Throttle(period=0.25 * 1e+6)
+
     @property
     def url(self):
         return self._url
 
     def request(self, path: str):
+        self._throttle.delay()
+        message = self._request(path)
+        if message.type == ResponseType.response:
+            self._throttle.update(message.body.elapsed)
+        return message
+
+    def _request(self, path: str):
         try:
             headers = dict(self.headers)
             url = self._url + path

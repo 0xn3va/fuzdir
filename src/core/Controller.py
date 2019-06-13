@@ -7,8 +7,8 @@ from src.wordlist.EncodingError import EncodingError
 from src.wordlist.Wordlist import Wordlist
 from src.filter.Filter import Filter
 from src.filter.FilterError import FilterError
-from src.network.RequestError import RequestError
-from src.network.Requests import Requests
+from src.network.request.RequestError import RequestError
+from src.network.request.Requester import Requester
 from src.output.CLIOutput import CLIOutput
 from src.output.Output import Output
 from src.output.SplashType import SplashType
@@ -40,11 +40,11 @@ class Controller:
             wordlist = Wordlist(wordlist_path=arg_parser.wordlist,
                                 extensions=arg_parser.extensions,
                                 extensions_file=arg_parser.extensions_file)
-            requests = Requests(url=arg_parser.url,
-                                cookie=arg_parser.cookie,
-                                user_agent=arg_parser.user_agent,
-                                timeout=arg_parser.timeout,
-                                allow_redirects=arg_parser.allow_redirect)
+            requests = Requester(url=arg_parser.url,
+                                 cookie=arg_parser.cookie,
+                                 user_agent=arg_parser.user_agent,
+                                 timeout=arg_parser.timeout,
+                                 allow_redirects=arg_parser.allow_redirect)
             filter = Filter(conditions=arg_parser.conditions)
             self._fuzzer = Fuzzer(wordlist, requests, filter, threads=arg_parser.threads)
 

@@ -1,16 +1,16 @@
 import threading
 
+from src.network.response.ResponseType import ResponseType
 from src.wordlist.Wordlist import Wordlist
 from src.filter.Filter import Filter
-from src.network.RequestError import RequestError
-from src.network.Requests import Requests
+from src.network.request.RequestError import RequestError
+from src.network.request.Requester import Requester
 from src.output.MessageType import MessageType
 from src.output.Output import Output
-from src.network.Response import ResponseType
 
 
 class Fuzzer:
-    def __init__(self, wordlist: Wordlist, requests: Requests, filter: Filter, threads: int = 1):
+    def __init__(self, wordlist: Wordlist, requests: Requester, filter: Filter, threads: int = 1):
         self._wordlist = wordlist
         self._wordlist_len = len(self._wordlist)
         self._requests = requests
