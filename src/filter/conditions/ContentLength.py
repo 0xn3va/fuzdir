@@ -3,7 +3,7 @@ from requests import Response
 from src.filter.FilterError import FilterError
 from src.filter.conditions.Condition import Condition
 from src.filter.ConditionPriority import ConditionPriority
-from src.network.utils import NetworkUtil
+from src.network.NetworkUtils import NetworkUtils
 
 
 class ContentLength(Condition):
@@ -31,4 +31,4 @@ class ContentLength(Condition):
             else:
                 return length_range[0] == content_length
 
-        return all(_match(length_range, NetworkUtil.content_length(response)) for length_range in self._ranges)
+        return all(_match(length_range, NetworkUtils.content_length(response)) for length_range in self._ranges)
