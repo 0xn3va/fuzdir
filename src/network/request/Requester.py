@@ -1,13 +1,17 @@
+import time
+
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry, disable_warnings
 from urllib3.exceptions import InsecureRequestWarning
 from urllib3.util import parse_url, Url
 
-from src.network.RequestError import RequestError
-from src.network.Throttle import Throttle
-from src.network.utils import Headers, Schemes
-from src.network.Response import Response, ResponseType
+from src.network.request.HeaderNames import HeaderNames
+from src.network.request.RequestError import RequestError
+from src.network.request.Schemes import Schemes
+from src.network.request.Throttle import Throttle
+from src.network.response.Response import Response
+from src.network.response.ResponseType import ResponseType
 from src.utils.UserAgents import UserAgents
 
 disable_warnings(InsecureRequestWarning)
@@ -15,8 +19,8 @@ disable_warnings(InsecureRequestWarning)
 
 class Requester:
     headers = {
-        Headers.accept_lang: 'en-us',
-        Headers.cache_control: 'max-age=0',
+        HeaderNames.accept_lang: 'en-us',
+        HeaderNames.cache_control: 'max-age=0',
     }
 
     def __init__(self, url: str, cookie: str = None, user_agent: str = None, timeout: int = 5,
@@ -58,38 +62,33 @@ class Requester:
 
         self._url = url.url
         #
-        self.headers[Headers.host] = '%s:%d' % (host, port,) if port != Schemes.ports[scheme] else host
+        self.headers[HeaderNames.host] = '%s:%d' % (host, port,) if port != Schemes.ports[scheme] else host
         #
         self._user_agent = user_agent
         self._timeout = timeout
 
         if cookie is not None:
-            self.headers[Headers.cookie] = cookie
+            self.headers[HeaderNames.cookie] = cookie
 
         self._session = requests.Session()
         add_retry_adapter(self._session)
 
         self._allow_redirects = allow_redirects
 
-        self._throttle = Throttle(period=0.25 * 1e+6)
+        self._throttle = Throttle(period=0)
 
     @property
     def url(self):
         return self._url
 
     def request(self, path: str):
-        self._throttle.delay()
-        message = self._request(path)
-        if message.type == ResponseType.response:
-            self._throttle.update(message.body.elapsed)
-        return message
-
-    def _request(self, path: str):
         try:
             headers = dict(self.headers)
             url = self._url + path
 
-            headers[Headers.user_agent] = self._user_agent if self._user_agent is not None else UserAgents.random_ua()
+            headers[HeaderNames.user_agent] = self._user_agent if self._user_agent is not None else UserAgents.random_ua()
+
+            d = time.time()
 
             response = self._session.get(
                 url=url,
@@ -98,6 +97,7 @@ class Requester:
                 allow_redirects=self._allow_redirects,
                 verify=False
             )
+            self._throttle.throttle(time.time() - d)
             return Response(ResponseType.response, response)
         except requests.exceptions.TooManyRedirects as e:
             raise RequestError('Too many redirects: %s' % (str(e),))

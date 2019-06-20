@@ -10,10 +10,10 @@ from src.output.Output import Output
 
 
 class Fuzzer:
-    def __init__(self, wordlist: Wordlist, requests: Requester, filter: Filter, threads: int = 1):
+    def __init__(self, wordlist: Wordlist, requester: Requester, filter: Filter, threads: int = 1):
         self._wordlist = wordlist
         self._wordlist_len = len(self._wordlist)
-        self._requests = requests
+        self._requester = requester
         self._filter = filter
         self.threads = threads
         self._is_cancel_lock = threading.Lock()
@@ -63,7 +63,7 @@ class Fuzzer:
                     path = next(self._paths)
                 except StopIteration:
                     break
-                message = self._requests.request(path=path)
+                message = self._requester.request(path=path)
                 if self._canceled():
                     break
                 if message.type == ResponseType.error:
@@ -73,7 +73,7 @@ class Fuzzer:
                     if self._filter.inspect(response):
                         output.print_response(response)
 
-                output.progress_bar(float(self._index_increment()) / float(self._wordlist_len) * 100)
+                # output.progress_bar(float(self._index_increment()) / float(self._wordlist_len) * 100)
         except RequestError as e:
             self._cancel(output, str(e))
 
