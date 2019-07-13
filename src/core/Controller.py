@@ -44,7 +44,8 @@ class Controller:
                                   cookie=arg_parser.cookie,
                                   user_agent=arg_parser.user_agent,
                                   timeout=arg_parser.timeout,
-                                  allow_redirects=arg_parser.allow_redirect)
+                                  allow_redirects=arg_parser.allow_redirect,
+                                  throttling_period=arg_parser.throttling_period)
             filter = Filter(conditions=arg_parser.conditions)
             self._fuzzer = Fuzzer(wordlist, requester, filter, threads=arg_parser.threads)
 

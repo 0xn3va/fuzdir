@@ -1,5 +1,3 @@
-import time
-
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry, disable_warnings
@@ -9,7 +7,7 @@ from urllib3.util import parse_url, Url
 from src.network.request.HeaderNames import HeaderNames
 from src.network.request.RequestError import RequestError
 from src.network.request.Schemes import Schemes
-from src.network.request.Throttle import Throttle
+from src.network.request.throttle.Throttle import Throttle
 from src.network.response.Response import Response
 from src.network.response.ResponseType import ResponseType
 from src.utils.UserAgents import UserAgents
@@ -24,7 +22,7 @@ class Requester:
     }
 
     def __init__(self, url: str, cookie: str = None, user_agent: str = None, timeout: int = 5,
-                 allow_redirects: bool = False):
+                 allow_redirects: bool = False, throttling_period: float = None):
 
         def add_retry_adapter(session, retries: int = 3, backoff_factor: float = 0.3,
                               status_forcelist: list = (502, 504,)):
@@ -74,30 +72,31 @@ class Requester:
         add_retry_adapter(self._session)
 
         self._allow_redirects = allow_redirects
-
-        self._throttle = Throttle(period=0)
+        self._throttle = Throttle(period=throttling_period)
 
     @property
     def url(self):
         return self._url
 
     def request(self, path: str):
+        @self._throttle
+        def get():
+            return self._request('GET', path)
+        return get()
+
+    def _request(self, method, path: str):
         try:
-            headers = dict(self.headers)
             url = self._url + path
-
+            headers = dict(self.headers)
             headers[HeaderNames.user_agent] = self._user_agent if self._user_agent is not None else UserAgents.random_ua()
-
-            d = time.time()
-
-            response = self._session.get(
+            response = self._session.request(
+                method=method,
                 url=url,
                 headers=headers,
                 timeout=self._timeout,
                 allow_redirects=self._allow_redirects,
                 verify=False
             )
-            self._throttle.throttle(time.time() - d)
             return Response(ResponseType.response, response)
         except requests.exceptions.TooManyRedirects as e:
             raise RequestError('Too many redirects: %s' % (str(e),))
