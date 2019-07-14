@@ -1,15 +1,17 @@
 import threading
-from abc import ABC, abstractmethod
+import time
 
 from colorama import init, Style, Fore, Back
 from requests import Response
+from urllib3.util import parse_url
 
-from src.output.MessageType import MessageType
+from src.network.NetworkUtils import NetworkUtils
+from src.network.request.HeaderNames import HeaderNames
+from src.utils.Singleton import Singleton
 from src.output.SplashType import SplashType
-from src.utils.FileUtils import FileUtils
 
 
-class Output(ABC):
+class Output(metaclass=Singleton):
     _banner_format = Style.BRIGHT + Fore.MAGENTA + '%s' + Style.RESET_ALL
     #
     _error_log_format = 'Errors: %s\n'
@@ -30,33 +32,33 @@ class Output(ABC):
     error_message_format = Style.BRIGHT + Fore.WHITE + Back.RED + '%s' + Style.RESET_ALL
     #
     _progress_bar_format = '%.2f%%'
+    #
+    _message_format = '[%s] %d - %6d - %s'
+    _redirect_message_format = '[%s] %d - %6d - %s  ->  %s'
+    _status_code_color = {
+        200: Fore.GREEN,
+        301: Fore.CYAN,
+        302: Fore.CYAN,
+        307: Fore.CYAN,
+        401: Fore.YELLOW,
+        403: Fore.BLUE
+    }
 
-    def __init__(self, error_log_path: str):
+    def __init__(self):
         init(autoreset=True)
-        self._error_log_path = error_log_path
-        if not FileUtils.dir_exist(self._error_log_path):
-            raise FileExistsError('Logs directory is missing')
-        if not FileUtils.is_writable(self._error_log_path):
-            raise FileExistsError('The log directory should be writable')
-        self._error_log = None
         self._cli_lock = threading.Lock()
-        self._log_lock = threading.Lock()
 
-    @abstractmethod
-    def print_response(self, response: Response):
-        return NotImplemented
-
-    def print_splash(self, splash_type: SplashType, *args):
+    def splash(self, splash_type: SplashType, *args):
         if splash_type == SplashType.banner:
             line = self._banner_format % (args[0],)
         elif splash_type == SplashType.log_path:
-            line = self._error_log_format % (self._error_log_path,)
+            line = self._error_log_format % (args[0],)
         elif splash_type == SplashType.config:
-            extensions, threads, wordlist_size = args
             line = ''
-            printable_extensions = extensions[:self._config_extensions_size] if self._config_extensions_size < len(extensions) else extensions
+            extensions, threads, wordlist_size = args
+            printable_extensions = extensions[:self._config_extensions_size]
             if len(printable_extensions) > 0:
-                extensions_value = self._config_extensions_separator.join(extension for extension in printable_extensions)
+                extensions_value = self._config_extensions_separator.join(ext for ext in printable_extensions)
                 if len(printable_extensions) < len(extensions):
                     extensions_value += self._config_extensions_padding
                 extensions_value = self._config_values_format % (extensions_value,)
@@ -68,39 +70,33 @@ class Output(ABC):
             line = self._config_format % (line,)
         else:
             line = self._target_format % (self._target_url_format % (args[0],),)
-        self.print_line(line)
+        self.line(line)
 
     def progress_bar(self, percent: float):
-        with self._cli_lock:
-            self.print_line(self._progress_bar_format % (percent,), end='\r')
+        self.line(self._progress_bar_format % (percent,), end='\r')
 
-    def print(self, message_type: MessageType, message: str):
-        if message_type == MessageType.log:
-            self._print_log(message)
-        elif message_type == MessageType.error:
-            self._print_error(message)
+    def error(self, message: str):
+        self.line(self.error_message_format % (message,))
+
+    def response(self, response: Response):
+        status = response.status_code
+        path = parse_url(response.url).path
+        content_length = NetworkUtils.content_length(response)
+
+        if status in (301, 302, 307) and HeaderNames.location in response.headers:
+            message = self._redirect_message_format % (time.strftime('%H:%M:%S'),
+                                                       status,
+                                                       content_length,
+                                                       path,
+                                                       response.headers[HeaderNames.location],)
         else:
-            self._print_info(message)
+            message = self._message_format % (time.strftime('%H:%M:%S'),
+                                              status,
+                                              content_length,
+                                              path,)
 
-    def _print_log(self, message: str):
-        with self._log_lock:
-            self.print_line(message, file=self._error_log)
+        self.line(self._status_code_color.get(status, '') + message)
 
-    def _print_error(self, message: str):
+    def line(self, line: str, end: str = '\n'):
         with self._cli_lock:
-            self.print_line(self.error_message_format % (message,))
-
-    def _print_info(self, message: str):
-        with self._cli_lock:
-            self.print_line(message)
-
-    @staticmethod
-    def print_line(line: str, end: str = '\n', file=None):
-        print(line, flush=True, end=end, file=file)
-
-    def __enter__(self):
-        self._error_log = open(self._error_log_path, 'w')
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self._error_log.close()
+            print(line, flush=True, end=end)
