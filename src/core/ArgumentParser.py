@@ -1,6 +1,6 @@
 import argparse
 
-from src.output.Output import Output
+from src.output import output
 
 
 class ArgumentParser:
@@ -18,11 +18,11 @@ class ArgumentParser:
         args = self.parse_args()
 
         if args.url is None:
-            Output.print_line(Output.error_message_format % ('Target URL is missing, use -u <url>',))
+            output.error('Target URL is missing, use -u <url>')
             exit(0)
 
         if args.wordlist is None:
-            Output.print_line(Output.error_message_format % ('Wordlist is missing, use -w <path to wordlist>',))
+            output.error('Wordlist is missing, use -w <path to wordlist>')
             exit(0)
 
         self.url = args.url
@@ -36,6 +36,7 @@ class ArgumentParser:
         self.allow_redirect = args.allow_redirect
         self.throttling_period = args.throttling_period
         self.conditions = args.conditions
+        self.verbose = args.verbose
 
     def parse_args(self):
         necessary_group = self._parser.add_argument_group('necessary parameters')
@@ -66,6 +67,10 @@ class ArgumentParser:
         request_group.add_argument('-c', '--cookie', type=str, action='store', dest='cookie')
         request_group.add_argument('--allow-redirect', action='store_true', dest='allow_redirect',
                                    help='allow follow up to redirection')
+
+        logging_group = self._parser.add_argument_group('logging settings')
+        logging_group.add_argument('-v', '--verbose', action='store_true', dest='verbose',
+                                   help='verbose logging')
 
         filter_group = self._parser.add_argument_group('filter')
         filter_group.add_argument('-x', type=str, action='store', dest='conditions', default='',
