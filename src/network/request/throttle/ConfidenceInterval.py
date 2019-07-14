@@ -1,3 +1,4 @@
+import logging
 from math import sqrt
 
 from src.network.request.throttle.Action import Action
@@ -7,6 +8,8 @@ class ConfidenceInterval:
     _window_size = 63
     _threshold = int(_window_size * 0.5)
     _min_mean = 0.05
+    #
+    _logging_format = 'Period: %.4f, borders: [%.4f, %.4f]'
 
     def __init__(self, period: float = None):
         self._fixed_period = period is not None
@@ -14,8 +17,6 @@ class ConfidenceInterval:
         self._action = None
         # 3-sigma borders and counters
         self._borders = None
-        self._out_of_left = 0
-        self._out_of_right = 0
         # statistics
         self._count = 0
         self._mean = 0.
@@ -27,7 +28,9 @@ class ConfidenceInterval:
                 if self._count < self._window_size:
                     self._statistics_update(elapsed)
                 else:
-                    self._borders = self._three_sigma_borders()
+                    left, right = self._three_sigma_borders()
+                    self._borders = (left, right)
+                    logging.debug(self._logging_format % (self._period, left, right))
             else:
                 left, right = self._borders
                 if elapsed < left:
@@ -50,7 +53,9 @@ class ConfidenceInterval:
                             self._borders = None
                         else:
                             self._period = self._mean
-                            self._borders = self._three_sigma_borders()
+                            left, right = self._three_sigma_borders()
+                            self._borders = (left, right)
+                            logging.debug(self._logging_format % (self._period, left, right))
                         self._statistics_reset()
                         self._action = None
         return self._period
