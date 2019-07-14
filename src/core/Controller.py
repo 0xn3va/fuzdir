@@ -1,16 +1,16 @@
+import logging
 import os
 import time
 
 from src.core.ArgumentParser import ArgumentParser
 from src.core.Fuzzer import Fuzzer
+from src.output import output
 from src.wordlist.EncodingError import EncodingError
 from src.wordlist.Wordlist import Wordlist
 from src.filter.Filter import Filter
 from src.filter.FilterError import FilterError
 from src.network.request.RequestError import RequestError
 from src.network.request.Requester import Requester
-from src.output.CLIOutput import CLIOutput
-from src.output.Output import Output
 from src.output.SplashType import SplashType
 
 MAJOR_VERSION = 0
@@ -24,19 +24,22 @@ VERSION = {
 
 
 class Controller:
-    _banner_file_name = 'banner.txt'
-    _logs_path = 'logs'
-    _error_log_path_format = 'errors-%s.txt'
+    _logging_format = '%(asctime)s %(pathname)s, line:%(lineno)d - %(levelname)s - %(message)s'
+    _logs_dir = 'logs'
+    _log_path_format = 'log-%s.txt'
+    #
+    _banner_filename = 'banner.txt'
 
     def __init__(self, root_path: str):
-        self._banner_path = os.path.join(root_path, self._banner_file_name)
-        error_log_path = os.path.join(root_path,
-                                      self._logs_path,
-                                      self._error_log_path_format % (time.strftime('%y-%m-%d_%H-%M-%S'),))
-
-        arg_parser = ArgumentParser()
         try:
-            self._output = CLIOutput(error_log_path=error_log_path)
+            arg_parser = ArgumentParser()
+            # logging config
+            log_path = os.path.join(root_path, self._logs_dir, self._log_path_format % (time.strftime('%y-%m-%d_%H-%M-%S'),))
+            # disable urllib3 logging debug level
+            logging.getLogger('urllib3').setLevel(logging.WARNING)
+            level = logging.DEBUG if arg_parser.verbose else logging.WARNING
+            logging.basicConfig(level=level, filename=log_path, format=self._logging_format)
+            #
             wordlist = Wordlist(wordlist_path=arg_parser.wordlist,
                                 extensions=arg_parser.extensions,
                                 extensions_file=arg_parser.extensions_file)
@@ -48,20 +51,21 @@ class Controller:
                                   throttling_period=arg_parser.throttling_period)
             filter = Filter(conditions=arg_parser.conditions)
             self._fuzzer = Fuzzer(wordlist, requester, filter, threads=arg_parser.threads)
-
-            #
-            with open(self._banner_path, 'r') as banner_file:
+            # format banner and print
+            with open(os.path.join(root_path, self._banner_filename), 'r') as banner_file:
                 banner = banner_file.read()
             banner = banner.format(**VERSION)
-            self._output.print_splash(SplashType.banner, banner)
+            output.splash(SplashType.banner, banner)
             #
-            self._output.print_splash(SplashType.log_path)
-            self._output.print_splash(SplashType.config, wordlist.extensions, self._fuzzer.threads, len(wordlist))
-            self._output.print_splash(SplashType.target, requester.url)
+            output.splash(SplashType.log_path, log_path)
+            output.splash(SplashType.config, wordlist.extensions, self._fuzzer.threads, len(wordlist))
+            output.splash(SplashType.target, requester.url)
         except (FilterError, FileExistsError, RequestError, EncodingError) as e:
-            Output.print_line(Output.error_message_format % (str(e),))
+            output.error(str(e))
             exit(0)
 
     def start(self):
-        with self._output as output:
-            self._fuzzer.start(output)
+        try:
+            self._fuzzer.start()
+        finally:
+            logging.shutdown()
