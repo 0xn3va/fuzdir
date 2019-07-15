@@ -30,7 +30,7 @@ class Wordlist:
             for line in file:
                 line = line.strip()
                 # Skip comments line
-                if self._is_comment(line):
+                if not line or self._is_comment(line):
                     continue
                 yield Encoding.decode(line)
 
