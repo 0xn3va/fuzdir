@@ -4,22 +4,13 @@ import os
 class FileUtils:
 
     @staticmethod
-    def dir_exist(path: str) -> bool:
-        if not isinstance(path, str):
-            return False
-        return os.path.isdir(FileUtils.dirname(path))
-
-    @staticmethod
     def is_writable(path: str) -> bool:
-        if not isinstance(path, str):
-            return False
-        return os.access(FileUtils.dirname(path), os.W_OK) and not os.path.isdir(path)
+        # is_writable consider a file missing
+        return os.access(FileUtils.dirname(path), os.W_OK) and (not os.path.exists(path) or os.path.isfile(path))
 
     @staticmethod
     def is_readable(path: str) -> bool:
-        if not isinstance(path, str):
-            return False
-        return os.path.isfile(path) and os.access(FileUtils.dirname(path), os.R_OK)
+        return os.access(FileUtils.dirname(path), os.R_OK) and os.path.isfile(path)
 
     @staticmethod
     def dirname(path: str) -> str:
