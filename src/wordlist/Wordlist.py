@@ -45,7 +45,7 @@ class Wordlist:
         return self._extensions
 
     def __len__(self):
-        return self._wordlist_size * len(self._extensions) if len(self._extensions) > 0 else self._wordlist_size
+        return self._wordlist_size + self._wordlist_size * len(self._extensions)
 
     @thread_safe_generator
     def __iter__(self) -> str:
