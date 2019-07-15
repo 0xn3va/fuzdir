@@ -5,6 +5,7 @@ import time
 from src.core.ArgumentParser import ArgumentParser
 from src.core.Fuzzer import Fuzzer
 from src.output import output
+from src.utils.FileUtils import FileUtils
 from src.wordlist.EncodingError import EncodingError
 from src.wordlist.Wordlist import Wordlist
 from src.filter.Filter import Filter
@@ -24,9 +25,13 @@ VERSION = {
 
 
 class Controller:
+    # logging settings
     _logging_format = '%(asctime)s %(pathname)s, line:%(lineno)d - %(levelname)s - %(message)s'
-    _logs_dir = 'logs'
-    _log_path_format = 'log-%s.txt'
+    _logs_dirname = 'logs'
+    _logs_capacity = 32
+    _log_name_format = '%s-%s.%s'
+    _log_name_prefix = 'log'
+    _log_extension = 'txt'
     #
     _banner_filename = 'banner.txt'
 
@@ -34,11 +39,7 @@ class Controller:
         try:
             arg_parser = ArgumentParser()
             # logging config
-            log_path = os.path.join(root_path, self._logs_dir, self._log_path_format % (time.strftime('%y-%m-%d_%H-%M-%S'),))
-            # disable urllib3 logging debug level
-            logging.getLogger('urllib3').setLevel(logging.WARNING)
-            level = logging.DEBUG if arg_parser.verbose else logging.WARNING
-            logging.basicConfig(level=level, filename=log_path, format=self._logging_format)
+            log_path = self._logging_setup(root_path, arg_parser.verbose)
             #
             wordlist = Wordlist(wordlist_path=arg_parser.wordlist,
                                 extensions=arg_parser.extensions,
@@ -60,9 +61,31 @@ class Controller:
             output.splash(SplashType.log_path, log_path)
             output.splash(SplashType.config, wordlist.extensions, self._fuzzer.threads, len(wordlist))
             output.splash(SplashType.target, requester.url)
-        except (FilterError, FileExistsError, RequestError, EncodingError) as e:
+        except (FilterError, NotADirectoryError, IOError, RequestError, EncodingError) as e:
             output.error(str(e))
             exit(0)
+
+    def _logging_setup(self, root_path: str, verbose: bool):
+        # logs folder settings
+        logs_path = os.path.join(root_path, self._logs_dirname)
+        if not os.path.isdir(logs_path):
+            raise NotADirectoryError('The logs directory is missing')
+        # remove old logs
+        logs = [name for name in os.listdir(logs_path) if name.startswith(self._log_name_prefix) and os.path.isfile(os.path.join(logs_path, name))]
+        logs.sort()
+        for log_name in logs[:max(0, len(logs) - self._logs_capacity)]:
+            os.remove(os.path.join(logs_path, log_name))
+        # log file settings
+        log_path = os.path.join(logs_path, self._log_name_format % (self._log_name_prefix, time.strftime('%y-%m-%d_%H-%M-%S'), self._log_extension,))
+        if not FileUtils.is_writable(log_path):
+            raise IOError('The log file should be writable')
+        # logging settings
+        # disable urllib3 logging debug level
+        logging.getLogger('urllib3').setLevel(logging.WARNING)
+        level = logging.DEBUG if verbose else logging.WARNING
+        logging.basicConfig(level=level, filename=log_path, format=self._logging_format)
+
+        return log_path
 
     def start(self):
         try:
