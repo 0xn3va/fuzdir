@@ -1,3 +1,4 @@
 requests
+pysocks
 urllib3
 colorama
