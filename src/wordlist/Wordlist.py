@@ -1,7 +1,6 @@
-import threading
-
 from src.utils.FileUtils import FileUtils
 from src.wordlist.Encoding import Encoding
+from src.wordlist.ThreadSafeIterator import thread_safe_iterator
 
 
 class Wordlist:
@@ -10,7 +9,6 @@ class Wordlist:
     _filename_format = '%s.%s'
 
     def __init__(self, wordlist_path: str, extensions: list, extensions_file: str):
-        self._lock = threading.Lock()
         if not FileUtils.is_readable(wordlist_path):
             raise IOError('The wordlist file does not exist or access denied')
         self._wordlist_path = wordlist_path
@@ -32,17 +30,17 @@ class Wordlist:
     def __len__(self):
         return self._wordlist_size + self._wordlist_size * len(self._extensions)
 
-    def __iter__(self) -> str:
-        with self._lock:
-            for sample in self._read_file(self._wordlist_path):
-                for extension in self._extensions:
-                    if self._pattern_symbol in extension:
-                        yield extension.replace(self._pattern_symbol, sample, 1)
-                    elif extension.startswith('.'):
-                        yield sample + extension
-                    else:
-                        yield self._filename_format % (sample, extension,)
-                yield sample
+    @thread_safe_iterator
+    def __iter__(self):
+        for sample in self._read_file(self._wordlist_path):
+            for extension in self._extensions:
+                if self._pattern_symbol in extension:
+                    yield extension.replace(self._pattern_symbol, sample, 1)
+                elif extension.startswith('.'):
+                    yield sample + extension
+                else:
+                    yield self._filename_format % (sample, extension,)
+            yield sample
 
     def _read_file(self, path: str) -> str:
         with open(path, 'rb') as file:
