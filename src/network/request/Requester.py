@@ -1,4 +1,5 @@
 import requests
+import urllib3
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry, disable_warnings
 from urllib3.exceptions import InsecureRequestWarning
@@ -10,6 +11,7 @@ from src.network.request.Schemes import Schemes
 from src.network.request.throttle.Throttle import Throttle
 from src.network.response.Response import Response
 from src.network.response.ResponseType import ResponseType
+from src.output import output
 from src.utils.UserAgents import UserAgents
 
 disable_warnings(InsecureRequestWarning)
@@ -22,7 +24,7 @@ class Requester:
     }
 
     def __init__(self, url: str, cookie: str = None, user_agent: str = None, timeout: int = 5,
-                 allow_redirects: bool = False, throttling_period: float = None):
+                 allow_redirects: bool = False, throttling_period: float = None, proxy: str = None):
 
         def add_retry_adapter(session, retries: int = 3, backoff_factor: float = 0.3,
                               status_forcelist: list = (502, 504,)):
@@ -73,6 +75,7 @@ class Requester:
 
         self._allow_redirects = allow_redirects
         self._throttle = Throttle(period=throttling_period)
+        self._proxies = None if proxy is None else {scheme: proxy}
 
     @property
     def url(self):
@@ -95,6 +98,7 @@ class Requester:
                 headers=headers,
                 timeout=self._timeout,
                 allow_redirects=self._allow_redirects,
+                proxies=self._proxies,
                 verify=False
             )
             return Response(ResponseType.response, response)
@@ -104,5 +108,7 @@ class Requester:
             raise RequestError('SSL error connection to server')
         except requests.exceptions.ConnectionError:
             raise RequestError('Failed to establish a connection with %s' % (self.url,))
+        except urllib3.exceptions.ProxySchemeUnknown as e:
+            raise RequestError(str(e))
         except requests.exceptions.RetryError as e:
             return Response(ResponseType.error, e)

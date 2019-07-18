@@ -49,6 +49,7 @@ class Controller:
                                   user_agent=arg_parser.user_agent,
                                   timeout=arg_parser.timeout,
                                   allow_redirects=arg_parser.allow_redirect,
+                                  proxy=arg_parser.proxy,
                                   throttling_period=arg_parser.throttling_period)
             filter = Filter(conditions=arg_parser.conditions)
             self._fuzzer = Fuzzer(wordlist, requester, filter, threads=arg_parser.threads)
