@@ -35,6 +35,7 @@ class ArgumentParser:
         self.cookie = args.cookie
         self.allow_redirect = args.allow_redirect
         self.throttling_period = args.throttling_period
+        self.proxy = args.proxy
         self.conditions = args.conditions
         self.verbose = args.verbose
 
@@ -60,6 +61,10 @@ class ArgumentParser:
                                       help='connection timeout, by default %ds.' % (self._timeout_default,))
         connection_group.add_argument('--throttling', type=float, action='store', dest='throttling_period',
                                       default=None, help='delay time in seconds (float) between requests sending')
+        connection_group.add_argument('--proxy', type=str, action='store', dest='proxy', default=None,
+                                      help='HTTP or SOCKS5 proxy\n'
+                                      + 'usage format:\n'
+                                      + '   [http|socks5]://user:pass@host:port\n')
 
         request_group = self._parser.add_argument_group('request settings')
         request_group.add_argument('--user-agent', type=str, action='store', dest='user_agent',
