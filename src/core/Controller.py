@@ -16,7 +16,7 @@ from src.output.SplashType import SplashType
 
 MAJOR_VERSION = 0
 MINOR_VERSION = 1
-REVISION = 'alpha1'
+REVISION = 'beta1'
 VERSION = {
     "MAJOR_VERSION": MAJOR_VERSION,
     "MINOR_VERSION": MINOR_VERSION,
