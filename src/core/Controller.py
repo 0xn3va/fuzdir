@@ -2,9 +2,9 @@ import logging
 import os
 import time
 
+from src import output
 from src.core.ArgumentParser import ArgumentParser
 from src.core.Fuzzer import Fuzzer
-from src.output import output
 from src.utils.FileUtils import FileUtils
 from src.wordlist.EncodingError import EncodingError
 from src.wordlist.Wordlist import Wordlist

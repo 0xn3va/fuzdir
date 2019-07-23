@@ -1,6 +1,6 @@
 import argparse
 
-from src.output import output
+from src import output
 
 
 class ArgumentParser:

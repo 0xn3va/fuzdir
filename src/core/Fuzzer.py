@@ -1,7 +1,7 @@
 import threading
 
+from src import output
 from src.network.response.ResponseType import ResponseType
-from src.output import output
 from src.wordlist.Wordlist import Wordlist
 from src.filter.Filter import Filter
 from src.network.request.RequestError import RequestError

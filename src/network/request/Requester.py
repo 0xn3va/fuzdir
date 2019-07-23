@@ -11,7 +11,6 @@ from src.network.request.Schemes import Schemes
 from src.network.request.throttle.Throttle import Throttle
 from src.network.response.Response import Response
 from src.network.response.ResponseType import ResponseType
-from src.output import output
 from src.utils.UserAgents import UserAgents
 
 disable_warnings(InsecureRequestWarning)
