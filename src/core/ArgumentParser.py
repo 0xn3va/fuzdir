@@ -1,6 +1,7 @@
 import argparse
 
 from src import output
+from src.output.reports.ReportType import ReportType
 
 
 class ArgumentParser:
@@ -15,7 +16,7 @@ class ArgumentParser:
         self._parser = argparse.ArgumentParser(prog='dirb',
                                                epilog=self._examples,
                                                formatter_class=argparse.RawTextHelpFormatter)
-        args = self.parse_args()
+        args = self._parse_args()
 
         if args.url is None:
             output.error('Target URL is missing, use -u <url>')
@@ -38,8 +39,12 @@ class ArgumentParser:
         self.proxy = args.proxy
         self.conditions = args.conditions
         self.verbose = args.verbose
+        self.report_type = None
+        self.report_path = args.plain_report  # or args.json_report
+        if args.plain_report is not None:
+            self.report_type = ReportType.plain_text
 
-    def parse_args(self):
+    def _parse_args(self):
         necessary_group = self._parser.add_argument_group('necessary parameters')
         necessary_group.add_argument('-u', '--url', type=str, action='store', dest='url', help='target URL')
         necessary_group.add_argument('-w', '--wordlist', type=str, action='store', dest='wordlist',
@@ -63,8 +68,8 @@ class ArgumentParser:
                                       default=None, help='delay time in seconds (float) between requests sending')
         connection_group.add_argument('--proxy', type=str, action='store', dest='proxy', default=None,
                                       help='HTTP or SOCKS5 proxy\n'
-                                      + 'usage format:\n'
-                                      + '   [http|socks5]://user:pass@host:port\n')
+                                           + 'usage format:\n'
+                                           + '   [http|socks5]://user:pass@host:port\n')
 
         request_group = self._parser.add_argument_group('request settings')
         request_group.add_argument('--user-agent', type=str, action='store', dest='user_agent',
@@ -76,6 +81,11 @@ class ArgumentParser:
         logging_group = self._parser.add_argument_group('logging settings')
         logging_group.add_argument('-v', '--verbose', action='store_true', dest='verbose',
                                    help='verbose logging')
+
+        report_group = self._parser.add_argument_group('reports settings')
+        report_group = report_group.add_mutually_exclusive_group()
+        report_group.add_argument('--plain-report', type=str, action='store', dest='plain_report', default=None,
+                                  help='A plain text reporting about the found status code, content length and URL')
 
         filter_group = self._parser.add_argument_group('filter')
         filter_group.add_argument('-x', type=str, action='store', dest='conditions', default='',

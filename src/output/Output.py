@@ -46,7 +46,7 @@ class Output(metaclass=Singleton):
 
     def __init__(self):
         init(autoreset=True)
-        self._cli_lock = threading.Lock()
+        self._lock = threading.Lock()
 
     def splash(self, splash_type: SplashType, *args):
         if splash_type == SplashType.banner:
@@ -98,5 +98,5 @@ class Output(metaclass=Singleton):
         self.line(self._status_code_color.get(status, '') + message)
 
     def line(self, line: str, end: str = '\n'):
-        with self._cli_lock:
+        with self._lock:
             print(line, flush=True, end=end)
