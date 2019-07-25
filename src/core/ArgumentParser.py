@@ -8,12 +8,12 @@ class ArgumentParser:
     _threads_default = 10
     _timeout_default = 5
     _examples = 'examples:\n' \
-                + '  dirb -u https://example.com -w wordlist.txt\n' \
-                + '  dirb -u https://example.com -w wordlist.txt -e html,js,php -x code=200\n' \
-                + '  dirb -u https://example.com -w wordlist.txt -x code=200;ignore:grep:headers=\'Auth\''
+                + '  fuzdir -u https://example.com -w wordlist.txt\n' \
+                + '  fuzdir -u https://example.com -w wordlist.txt -e html,js,php -x code=200\n' \
+                + '  fuzdir -u https://example.com -w wordlist.txt -x code=200;ignore:grep:headers=\'Auth\''
 
     def __init__(self):
-        self._parser = argparse.ArgumentParser(prog='dirb',
+        self._parser = argparse.ArgumentParser(prog='fuzdir',
                                                epilog=self._examples,
                                                formatter_class=argparse.RawTextHelpFormatter)
         args = self._parse_args()

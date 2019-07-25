@@ -1,11 +1,11 @@
-# dirb
+# fuzdir
 
 Lite web path fuzzer
 
 # Usage
 
 ```bash
-$ dirb.py -u <url> -w <wordlist> [OPTIONS]
+$ fuzdir.py -u <url> -w <wordlist> [OPTIONS]
 ```
 
 # Setup
