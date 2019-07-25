@@ -1,16 +1,16 @@
 from requests import Response
 
-from src.filter.conditions.Code import Code
+from src.filter.conditions.CodeCondition import CodeCondition
 from src.filter.FilterError import FilterError
-from src.filter.conditions.ContentLength import ContentLength
-from src.filter.conditions.Grep import Grep
+from src.filter.conditions.ContentLengthCondition import ContentLengthCondition
+from src.filter.conditions.GrepCondition import GrepCondition
 
 
 class Filter:
     handlers = {
-        'code': Code,
-        'length': ContentLength,
-        'grep': Grep
+        'code': CodeCondition,
+        'length': ContentLengthCondition,
+        'grep': GrepCondition
     }
 
     _conditions_separator = ';'
