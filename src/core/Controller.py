@@ -2,9 +2,9 @@ import logging
 import os
 import time
 
+from src import output
 from src.core.ArgumentParser import ArgumentParser
 from src.core.Fuzzer import Fuzzer
-from src.output import output
 from src.utils.FileUtils import FileUtils
 from src.wordlist.EncodingError import EncodingError
 from src.wordlist.Wordlist import Wordlist
@@ -40,6 +40,7 @@ class Controller:
             arg_parser = ArgumentParser()
             # logging config
             log_path = self._logging_setup(root_path, arg_parser.verbose)
+            output.config(report_type=arg_parser.report_type, filename=arg_parser.report_path)
             #
             wordlist = Wordlist(wordlist_path=arg_parser.wordlist,
                                 extensions=arg_parser.extensions,
@@ -93,3 +94,4 @@ class Controller:
             self._fuzzer.start()
         finally:
             logging.shutdown()
+            output.shutdown()
