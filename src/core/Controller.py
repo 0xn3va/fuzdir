@@ -59,7 +59,6 @@ class Controller:
                 banner = banner_file.read()
             banner = banner.format(**VERSION)
             output.splash(SplashType.banner, banner)
-            #
             output.splash(SplashType.log_path, log_path)
             output.splash(SplashType.config, wordlist.extensions, self._fuzzer.threads, len(wordlist))
             output.splash(SplashType.target, requester.url)
