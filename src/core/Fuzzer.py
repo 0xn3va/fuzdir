@@ -46,7 +46,7 @@ class Fuzzer:
             for thread in threads:
                 thread.join()
         except KeyboardInterrupt:
-            self._cancel('KeyboardInterrupt')
+            self._cancel('User aborted')
         finally:
             while any(thread.is_alive() for thread in threads):
                 try:
