@@ -12,27 +12,14 @@ from src.output.SplashType import SplashType
 
 
 class Output(metaclass=Singleton):
-    _banner_format = Style.BRIGHT + Fore.MAGENTA + '%s' + Style.RESET_ALL
-    #
-    _error_log_format = 'Errors: %s\n'
-    #
-    _config_format = Style.BRIGHT + Fore.YELLOW + '%s' + Style.RESET_ALL
-    _config_separator = Fore.MAGENTA + ' | ' + Fore.YELLOW
-    _config_extensions_size = 5
-    _config_extensions_separator = ', '
-    _config_extensions_padding = ' ...'
-    _config_extensions_format = 'Extensions: %s%s'
-    _config_threads_format = 'Threads: %s%s'
-    _config_wordlist_format = 'Wordlist size: %s'
+    _banner_format = Style.BRIGHT + Fore.YELLOW + '%s' + Style.RESET_ALL
+    _log_format = 'Log file: %s\n'
+    _config_format = Style.BRIGHT + Fore.YELLOW + 'Threads: %s | Wordlist size: %s\n' + Style.RESET_ALL
     _config_values_format = Fore.CYAN + '%s' + Fore.YELLOW
-    #
-    _target_format = Style.BRIGHT + Fore.YELLOW + '\nTarget: %s\n' + Style.RESET_ALL
+    _target_format = Style.BRIGHT + Fore.YELLOW + 'Target: %s\n' + Style.RESET_ALL
     _target_url_format = Fore.CYAN + '%s' + Fore.YELLOW
-    #
     error_message_format = Style.BRIGHT + Fore.WHITE + Back.RED + '%s' + Style.RESET_ALL
-    #
     _progress_bar_format = '%.2f%%'
-    #
     _message_format = '[%s] %d - %6d - %s'
     _redirect_message_format = '[%s] %d - %6d - %s  ->  %s'
     _status_code_color = {
@@ -52,22 +39,12 @@ class Output(metaclass=Singleton):
         if splash_type == SplashType.banner:
             line = self._banner_format % (args[0],)
         elif splash_type == SplashType.log_path:
-            line = self._error_log_format % (args[0],)
+            line = self._log_format % (args[0],)
         elif splash_type == SplashType.config:
-            line = ''
             extensions, threads, wordlist_size = args
-            printable_extensions = extensions[:self._config_extensions_size]
-            if len(printable_extensions) > 0:
-                extensions_value = self._config_extensions_separator.join(ext for ext in printable_extensions)
-                if len(printable_extensions) < len(extensions):
-                    extensions_value += self._config_extensions_padding
-                extensions_value = self._config_values_format % (extensions_value,)
-                line = self._config_extensions_format % (extensions_value, self._config_separator,)
             threads_value = self._config_values_format % (str(threads),)
             wordlist_value = self._config_values_format % (str(wordlist_size),)
-            line += self._config_threads_format % (threads_value, self._config_separator,)
-            line += self._config_wordlist_format % (wordlist_value,)
-            line = self._config_format % (line,)
+            line = self._config_format % (threads_value, wordlist_value,)
         else:
             line = self._target_format % (self._target_url_format % (args[0],),)
         self.line(line)

@@ -11,25 +11,15 @@ from src.network.request.Requester import Requester
 class Fuzzer:
     def __init__(self, wordlist: Wordlist, requester: Requester, filter: Filter, threads: int = 1):
         self._wordlist = wordlist
-        self._wordlist_len = len(self._wordlist)
         self._requester = requester
         self._filter = filter
         self.threads = threads
+        self._wordlist_len = len(self._wordlist)
         self._is_cancel_lock = threading.Lock()
-        self._index_lock = threading.Lock()
         self._is_cancel = False
         self._paths = None
+        self._index_lock = threading.Lock()
         self._index = 0
-
-    @property
-    def _is_cancel(self):
-        with self._is_cancel_lock:
-            return self._status
-
-    @_is_cancel.setter
-    def _is_cancel(self, status: bool):
-        with self._is_cancel_lock:
-            self._status = status
 
     def start(self):
         threads = set()
@@ -46,7 +36,7 @@ class Fuzzer:
             for thread in threads:
                 thread.join()
         except KeyboardInterrupt:
-            self._cancel('KeyboardInterrupt')
+            self._cancel('User aborted')
         finally:
             while any(thread.is_alive() for thread in threads):
                 try:
@@ -77,12 +67,14 @@ class Fuzzer:
             self._cancel(str(e))
 
     def _canceled(self):
-        return self._is_cancel
+        with self._is_cancel_lock:
+            return self._is_cancel
 
     def _cancel(self, e: str):
-        if not self._canceled():
-            self._is_cancel = True
-            output.error(e)
+        with self._is_cancel_lock:
+            if not self._is_cancel:
+                self._is_cancel = True
+                output.error(e)
 
     def _index_increment(self):
         with self._index_lock:
