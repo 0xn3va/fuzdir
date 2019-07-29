@@ -1,7 +1,7 @@
 import logging
 from math import sqrt
 
-from src.network.request.throttle.Action import Action
+from src.network.request.throttle.action import Action
 
 
 class ConfidenceInterval:

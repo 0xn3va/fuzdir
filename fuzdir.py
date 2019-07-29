@@ -2,7 +2,7 @@
 
 import os
 
-from src.core.Controller import Controller
+from src.core.controller import Controller
 
 
 def fuzdir():

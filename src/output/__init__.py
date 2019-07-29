@@ -1,10 +1,10 @@
 from requests import Response
 
-from src.output.Output import Output
-from src.output.reports.PlainReport import PlainReport
-from src.output.reports.ReportManager import ReportManager
-from src.output.reports.ReportType import ReportType
-from src.output.SplashType import SplashType
+from src.output.output import Output
+from src.output.reports.plain_report import PlainReport
+from src.output.reports.report_manager import ReportManager
+from src.output.reports.report_type import ReportType
+from src.output.splash_type import SplashType
 
 output = Output()
 report = ReportManager()

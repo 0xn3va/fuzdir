@@ -1,9 +1,9 @@
 from requests import Response
 
-from src.filter.FilterError import FilterError
-from src.filter.conditions.Condition import Condition
-from src.filter.conditions.ConditionPriority import ConditionPriority
-from src.network.NetworkUtils import NetworkUtils
+from src.filter.filter_error import FilterError
+from src.filter.conditions.condition import Condition
+from src.filter.conditions.condition_priority import ConditionPriority
+from src.network.network_utils import NetworkUtils
 
 
 class ContentLengthCondition(Condition):

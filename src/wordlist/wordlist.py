@@ -1,6 +1,6 @@
-from src.utils.FileUtils import FileUtils
-from src.wordlist.Encoding import Encoding
-from src.wordlist.ThreadSafeIterator import thread_safe_iterator
+from src.utils.file_utils import FileUtils
+from src.wordlist.encoding import Encoding
+from src.wordlist.thread_safe_iterator import thread_safe_iterator
 
 
 class Wordlist:

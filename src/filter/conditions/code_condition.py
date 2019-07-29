@@ -1,8 +1,8 @@
 from requests import Response
 
-from src.filter.conditions.Condition import Condition
-from src.filter.FilterError import FilterError
-from src.filter.conditions.ConditionPriority import ConditionPriority
+from src.filter.conditions.condition import Condition
+from src.filter.filter_error import FilterError
+from src.filter.conditions.condition_priority import ConditionPriority
 
 
 class CodeCondition(Condition):

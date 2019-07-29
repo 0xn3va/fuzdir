@@ -5,10 +5,10 @@ from colorama import init, Style, Fore, Back
 from requests import Response
 from urllib3.util import parse_url
 
-from src.network.NetworkUtils import NetworkUtils
-from src.network.request.HeaderNames import HeaderNames
-from src.utils.Singleton import Singleton
-from src.output.SplashType import SplashType
+from src.network.network_utils import NetworkUtils
+from src.network.request.header_names import HeaderNames
+from src.utils.singleton import Singleton
+from src.output.splash_type import SplashType
 
 
 class Output(metaclass=Singleton):

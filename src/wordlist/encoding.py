@@ -1,4 +1,4 @@
-from src.wordlist.EncodingError import EncodingError
+from src.wordlist.encoding_error import EncodingError
 
 
 class Encoding:

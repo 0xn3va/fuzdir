@@ -1,6 +1,6 @@
 from requests import Response
 
-from src.network.request.HeaderNames import HeaderNames
+from src.network.request.header_names import HeaderNames
 
 
 class NetworkUtils:

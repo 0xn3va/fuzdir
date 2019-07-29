@@ -3,16 +3,16 @@ import os
 import time
 
 from src import output
-from src.core.ArgumentParser import ArgumentParser
-from src.core.Fuzzer import Fuzzer
-from src.utils.FileUtils import FileUtils
-from src.wordlist.EncodingError import EncodingError
-from src.wordlist.Wordlist import Wordlist
-from src.filter.Filter import Filter
-from src.filter.FilterError import FilterError
-from src.network.request.RequestError import RequestError
-from src.network.request.Requester import Requester
-from src.output.SplashType import SplashType
+from src.core.argument_parser import ArgumentParser
+from src.core.fuzzer import Fuzzer
+from src.utils.file_utils import FileUtils
+from src.wordlist.encoding_error import EncodingError
+from src.wordlist.wordlist import Wordlist
+from src.filter.filter import Filter
+from src.filter.filter_error import FilterError
+from src.network.request.request_error import RequestError
+from src.network.request.requester import Requester
+from src.output.splash_type import SplashType
 
 MAJOR_VERSION = 0
 MINOR_VERSION = 1

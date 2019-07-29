@@ -1,4 +1,4 @@
-from src.network.response.ResponseType import ResponseType
+from src.network.response.response_type import ResponseType
 
 
 class Response:

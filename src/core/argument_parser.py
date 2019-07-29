@@ -1,7 +1,7 @@
 import argparse
 
 from src import output
-from src.output.reports.ReportType import ReportType
+from src.output.reports.report_type import ReportType
 
 
 class ArgumentParser:

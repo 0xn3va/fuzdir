@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 from requests import Response
 
-from src.utils.FileUtils import FileUtils
+from src.utils.file_utils import FileUtils
 
 
 class Report(ABC):

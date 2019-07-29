@@ -2,7 +2,7 @@ import threading
 import time
 from functools import wraps
 
-from src.network.request.throttle.ConfidenceInterval import ConfidenceInterval
+from src.network.request.throttle.confidence_interval import ConfidenceInterval
 
 
 class Throttle:

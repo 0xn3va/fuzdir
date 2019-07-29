@@ -5,13 +5,13 @@ from urllib3 import Retry, disable_warnings
 from urllib3.exceptions import InsecureRequestWarning
 from urllib3.util import parse_url, Url
 
-from src.network.request.HeaderNames import HeaderNames
-from src.network.request.RequestError import RequestError
-from src.network.request.Schemes import Schemes
-from src.network.request.throttle.Throttle import Throttle
-from src.network.response.Response import Response
-from src.network.response.ResponseType import ResponseType
-from src.utils.UserAgents import UserAgents
+from src.network.request.header_names import HeaderNames
+from src.network.request.request_error import RequestError
+from src.network.request.schemes import Schemes
+from src.network.request.throttle.throttle import Throttle
+from src.network.response.response import Response
+from src.network.response.response_type import ResponseType
+from src.utils.user_agents import UserAgents
 
 disable_warnings(InsecureRequestWarning)
 

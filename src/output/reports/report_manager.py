@@ -1,7 +1,7 @@
 import threading
 
-from src.output.reports.PlainReport import PlainReport
-from src.output.reports.ReportType import ReportType
+from src.output.reports.plain_report import PlainReport
+from src.output.reports.report_type import ReportType
 
 
 class ReportManager:

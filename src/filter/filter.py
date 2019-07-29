@@ -1,9 +1,9 @@
 from requests import Response
 
-from src.filter.conditions.CodeCondition import CodeCondition
-from src.filter.FilterError import FilterError
-from src.filter.conditions.ContentLengthCondition import ContentLengthCondition
-from src.filter.conditions.GrepCondition import GrepCondition
+from src.filter.conditions.code_condition import CodeCondition
+from src.filter.filter_error import FilterError
+from src.filter.conditions.content_length_condition import ContentLengthCondition
+from src.filter.conditions.grep_condition import GrepCondition
 
 
 class Filter:

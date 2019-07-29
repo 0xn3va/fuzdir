@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 from requests import Response
 
-from src.filter.conditions.ConditionPriority import ConditionPriority
+from src.filter.conditions.condition_priority import ConditionPriority
 
 
 class Condition(ABC):

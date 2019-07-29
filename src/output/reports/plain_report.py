@@ -1,7 +1,7 @@
 from requests import Response
 
-from src.network.NetworkUtils import NetworkUtils
-from src.output.reports.Report import Report
+from src.network.network_utils import NetworkUtils
+from src.output.reports.report import Report
 
 
 class PlainReport(Report):
