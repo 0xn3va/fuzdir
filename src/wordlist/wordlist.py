@@ -8,7 +8,7 @@ class Wordlist:
     _comment_symbol = b'#'
     _filename_format = '%s.%s'
 
-    def __init__(self, wordlist_path: str, extensions: list, extensions_file: str):
+    def __init__(self, wordlist_path: str, extensions: list, extensions_file: str = None):
         if not FileUtils.is_readable(wordlist_path):
             raise IOError('The wordlist file does not exist or access denied')
         self._wordlist_path = wordlist_path
@@ -47,6 +47,6 @@ class Wordlist:
             for line in file:
                 line = line.strip()
                 # Skip comments line
-                if not line or line[0] == self._comment_symbol:
+                if not line or line.startswith(self._comment_symbol):
                     continue
                 yield Encoding.decode(line)
