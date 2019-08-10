@@ -28,12 +28,10 @@ class ConfidenceInterval:
                 if self._count < self._window_size:
                     self._statistics_update(elapsed)
                 else:
-                    left, right = self._three_sigma_borders()
-                    self._borders = (left, right)
-                    logging.debug(self._logging_format % (self._period, left, right))
+                    self._update(period=0.)
             else:
                 left, right = self._borders
-                if elapsed < left:
+                if elapsed < left or left < 0. and self._mean < self._period:
                     action = Action.decrease
                 elif elapsed > right:
                     action = Action.increase
@@ -52,10 +50,7 @@ class ConfidenceInterval:
                             self._period = 0.
                             self._borders = None
                         else:
-                            self._period = self._mean
-                            left, right = self._three_sigma_borders()
-                            self._borders = (left, right)
-                            logging.debug(self._logging_format % (self._period, left, right))
+                            self._update(period=self._mean)
                         self._statistics_reset()
                         self._action = None
         return self._period
@@ -71,6 +66,12 @@ class ConfidenceInterval:
         self._count = 0
         self._mean = 0.
         self._variance = 0.
+
+    def _update(self, period):
+        self._period = period
+        left, right = self._three_sigma_borders()
+        self._borders = (left, right)
+        logging.debug(self._logging_format % (self._period, left, right))
 
     def _three_sigma_borders(self):
         window = 3 * sqrt(self._variance)
