@@ -34,6 +34,6 @@ class Throttle:
             if time_since_last_call < period:
                 delta = period - time_since_last_call
                 time.sleep(delta)
-                self._time_of_last_call += delta
+                self._time_of_last_call = time.time()
             else:
                 self._time_of_last_call = current_time
