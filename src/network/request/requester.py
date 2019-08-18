@@ -1,5 +1,4 @@
 import requests
-import urllib3
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry, disable_warnings
 from urllib3.exceptions import InsecureRequestWarning
