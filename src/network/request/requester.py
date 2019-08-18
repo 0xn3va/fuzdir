@@ -26,7 +26,7 @@ class Requester:
                  allow_redirects: bool = False, throttling_period: float = None, proxy: str = None):
 
         def add_retry_adapter(session, retries: int = 3, backoff_factor: float = 0.3,
-                              status_forcelist: list = (502, 504,)):
+                              status_forcelist: list = (500, 502, 503, 504,)):
             retry = Retry(
                 total=retries,
                 read=retries,
@@ -42,6 +42,8 @@ class Requester:
         parsed_url = parse_url(url)
 
         scheme = parsed_url.scheme or Schemes.default
+        if scheme not in Schemes.allowable:
+            raise RequestError('Invalid scheme: %s' % (scheme,))
         host = parsed_url.host
         if host is None:
             raise RequestError('Invalid url: %s' % (url,))
@@ -107,7 +109,7 @@ class Requester:
             raise RequestError('SSL error connection to server')
         except requests.exceptions.ConnectionError:
             raise RequestError('Failed to establish a connection with %s' % (self.url,))
-        except urllib3.exceptions.ProxySchemeUnknown as e:
-            raise RequestError(str(e))
         except requests.exceptions.RetryError as e:
             return Response(ResponseType.error, e)
+        except Exception as e:
+            raise RequestError(str(e))
