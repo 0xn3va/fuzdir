@@ -59,7 +59,7 @@ class FileUtilsTest(unittest.TestCase):
                 return FileUtils.is_readable(temp_dirname)
 
         self.assertFalse(file_readable(), msg='Check on read permissions to file failed')
-        self.assertTrue(FileUtils.is_readable(self._get_fake_filename()), msg='Check on file missing failed')
+        self.assertFalse(FileUtils.is_readable(self._get_fake_filename()), msg='Check on file missing failed')
         self.assertFalse(is_file(), msg='Check on that this is indeed a file failed')
 
     def _get_fake_filename(self):
