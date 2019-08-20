@@ -15,8 +15,8 @@ class CodeCondition(Condition):
 
     def setup(self, condition_args: str, handler_args: str = ''):
         try:
-            self._codes = []
-            for arg in condition_args.split(self._args_separator):
+            self._codes.clear()
+            for arg in condition_args.strip(self._args_separator).split(self._args_separator):
                 code = int(arg)
                 if code < self._min_codes or code > self._max_codes:
                     raise FilterError('Invalid HTTP status code: %s' % (code,))
