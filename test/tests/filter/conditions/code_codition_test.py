@@ -23,7 +23,7 @@ class CodeConditionTest(unittest.TestCase):
             condition.setup(condition_args='0')
         # list of status codes with separator in the end of line
         condition.setup(condition_args='200,404,')
-        self.assertListEqual(condition._codes, [200, 404], msg='Check on setup with empty line failed')
+        self.assertListEqual(condition._codes, [200, 404], msg='Check on setup with separator in the end line failed')
 
     def test_match(self):
         class Handler(HTTPRequestHandler):
