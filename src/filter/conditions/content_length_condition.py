@@ -15,9 +15,10 @@ class ContentLengthCondition(Condition):
 
     def setup(self, condition_args: str, handler_args: str = ''):
         try:
-            for arg in condition_args.split(self._args_separator):
+            self._ranges.clear()
+            for arg in condition_args.strip(self._args_separator).split(self._args_separator):
                 lengths = [length for length in map(int, arg.split(self._length_separator))]
-                if len(lengths) > 2 or any(length < 0 for length in lengths):
+                if len(lengths) > 2 or any(length < 0 for length in lengths) or lengths[0] > lengths[-1]:
                     raise FilterError('Invalid content length range %s' % (condition_args,))
                 self._ranges.append(lengths)
         except ValueError:
@@ -31,4 +32,4 @@ class ContentLengthCondition(Condition):
             else:
                 return length_range[0] == content_length
 
-        return all(_match(length_range, NetworkUtils.content_length(response)) for length_range in self._ranges)
+        return any(_match(length_range, NetworkUtils.content_length(response)) for length_range in self._ranges)
