@@ -24,7 +24,7 @@ class Filter:
         if len(conditions) == 0:
             return
 
-        for condition in conditions.split(self._conditions_separator):
+        for condition in conditions.strip(self._conditions_separator).split(self._conditions_separator):
             handler, _, condition_args = condition.partition(self._args_separator)
             if len(condition_args) < 1:
                 raise FilterError('Invalid condition: %s' % (condition,))
