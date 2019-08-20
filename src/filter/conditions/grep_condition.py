@@ -28,7 +28,7 @@ class GrepCondition(Condition):
 
     def match(self, response: Response):
         if len(self._grep_part) > 0:
-            return self._parts_match[self._grep_part]
+            return self._parts_match[self._grep_part](response)
         return any(part_match(response) for part_match in self._parts_match.values())
 
     def _headers_match(self, response: Response):
