@@ -21,10 +21,10 @@ class Requester:
         HeaderNames.cache_control: 'max-age=0',
     }
 
-    def __init__(self, url: str, cookie: str = None, user_agent: str = None, timeout: int = 5,
-                 allow_redirects: bool = False, throttling_period: float = None, proxy: str = None):
+    def __init__(self, url: str, cookie: str = None, headers: dict = None, user_agent: str = None, timeout: int = 5,
+                 retries: int = 3, allow_redirects: bool = False, throttling_period: float = None, proxy: str = None):
 
-        def add_retry_adapter(session, retries: int = 3, backoff_factor: float = 0.3,
+        def add_retry_adapter(session: requests.Session, retries: int, backoff_factor: float = 0.3,
                               status_forcelist: list = (500, 502, 503, 504,)):
             retry = Retry(
                 total=retries,
@@ -70,8 +70,14 @@ class Requester:
         if cookie is not None:
             self.headers[HeaderNames.cookie] = cookie
 
+        if headers is not None:
+            self.headers.update(headers)
+
+        if retries < 0 or retries > 5:
+            raise RequestError('Invalid value of retries: %d, allowable values from 0 to 5 inclusive' % (retries,))
+
         self._session = requests.Session()
-        add_retry_adapter(self._session)
+        add_retry_adapter(session=self._session, retries=retries)
 
         self._allow_redirects = allow_redirects
         self._throttle = Throttle(period=throttling_period)
@@ -85,6 +91,7 @@ class Requester:
         @self._throttle
         def get():
             return self._request('GET', path)
+
         return get()
 
     def _request(self, method, path: str):
