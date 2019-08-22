@@ -1,12 +1,14 @@
 import argparse
 
-from src import output
+from src.argument_parser.argument_parser_error import ArgumentParserError
+from src.argument_parser.store_dict import StoreDict
 from src.output.reports.report_type import ReportType
 
 
 class ArgumentParser:
     _threads_default = 10
     _timeout_default = 5
+    _retry_default = 3
     _examples = 'examples:\n' \
                 + '  fuzdir -u https://example.com -w wordlist.txt\n' \
                 + '  fuzdir -u https://example.com -w wordlist.txt -e html,js,php -x code=200\n' \
@@ -19,21 +21,21 @@ class ArgumentParser:
         args = self._parse_args()
 
         if args.url is None:
-            output.error('Target URL is missing, use -u <url>')
-            exit(0)
+            raise ArgumentParserError('Target URL is missing, use -u <url>')
 
         if args.wordlist is None:
-            output.error('Wordlist is missing, use -w <path to wordlist>')
-            exit(0)
+            raise ArgumentParserError('Wordlist is missing, use -w <path to wordlist>')
 
         self.url = args.url
         self.wordlist = args.wordlist
         self.threads = args.threads
         self.timeout = args.timeout
+        self.retry = args.retry
         self.extensions = [] if args.extensions is None else args.extensions.split(',')
         self.extensions_file = args.extensions_file
         self.user_agent = args.user_agent
         self.cookie = args.cookie
+        self.headers = args.headers
         self.allow_redirect = args.allow_redirect
         self.throttling_period = args.throttling_period
         self.proxy = args.proxy
@@ -64,6 +66,8 @@ class ArgumentParser:
         connection_group.add_argument('--timeout', type=int, action='store', dest='timeout',
                                       default=self._timeout_default,
                                       help='connection timeout, by default %ds.' % (self._timeout_default,))
+        connection_group.add_argument('--retry', type=int, action='store', dest='retry', default=self._retry_default,
+                                      help='number of attempts to connect to the server, by default %d times' % (self._retry_default,))
         connection_group.add_argument('--throttling', type=float, action='store', dest='throttling_period',
                                       default=None, help='delay time in seconds (float) between requests sending')
         connection_group.add_argument('--proxy', type=str, action='store', dest='proxy', default=None,
@@ -75,6 +79,8 @@ class ArgumentParser:
         request_group.add_argument('--user-agent', type=str, action='store', dest='user_agent',
                                    help='custom user agent, by default setting random user agent')
         request_group.add_argument('-c', '--cookie', type=str, action='store', dest='cookie')
+        request_group.add_argument('-H', '--header', type=str, action=StoreDict, dest='headers', default={},
+                                   help='pass custom header(s)')
         request_group.add_argument('--allow-redirect', action='store_true', dest='allow_redirect',
                                    help='allow follow up to redirection')
 

@@ -3,7 +3,8 @@ import os
 import time
 
 from src import output
-from src.core.argument_parser import ArgumentParser
+from src.argument_parser.argument_parser import ArgumentParser
+from src.argument_parser.argument_parser_error import ArgumentParserError
 from src.core.fuzzer import Fuzzer
 from src.utils.file_utils import FileUtils
 from src.wordlist.encoding_error import EncodingError
@@ -47,8 +48,10 @@ class Controller:
                                 extensions_file=arg_parser.extensions_file)
             requester = Requester(url=arg_parser.url,
                                   cookie=arg_parser.cookie,
+                                  headers=arg_parser.headers,
                                   user_agent=arg_parser.user_agent,
                                   timeout=arg_parser.timeout,
+                                  retries=arg_parser.retry,
                                   allow_redirects=arg_parser.allow_redirect,
                                   proxy=arg_parser.proxy,
                                   throttling_period=arg_parser.throttling_period)
@@ -62,7 +65,7 @@ class Controller:
             output.splash(SplashType.log_path, log_path)
             output.splash(SplashType.config, wordlist.extensions, self._fuzzer.threads, len(wordlist))
             output.splash(SplashType.target, requester.url)
-        except (FilterError, NotADirectoryError, IOError, RequestError, EncodingError) as e:
+        except (ArgumentParserError, FilterError, NotADirectoryError, IOError, RequestError, EncodingError) as e:
             output.error(str(e))
             exit(0)
 
