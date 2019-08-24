@@ -5,7 +5,7 @@ from src.argument_parser.argument_parser_error import ArgumentParserError
 
 class StoreDict(argparse.Action):
     _separator = ':'
-    _message_format = 'Invalid argument: %s'
+    _message_format = 'Invalid argument value: %s'
 
     def __call__(self, parser, namespace, values, option_string=None):
         try:
