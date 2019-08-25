@@ -1,58 +1,35 @@
-import random
 import tempfile
 import unittest
 
 from src.dictionary.dictionary import Dictionary
+from src.dictionary.extension_list import ExtensionList
+from src.dictionary.word_list import WordList
+from test.mocks.utils import random_name
 
 
-class WordlistTest(unittest.TestCase):
-
-    _arg_ext = ['txt', '%.bak', '.js']
-    _file_ext = ['txt', 'html', 'php']
-    _file_wl = ['index', 'login', 'config']
-    _file_formation_result = ['index', 'index.txt', 'index.bak', 'index.js']
-
-    def test_extensions(self):
-        def spaces():
-            return random.choice([' ', '\t']) * random.randint(0, 1)
-
-        with tempfile.NamedTemporaryFile() as wl_file, tempfile.NamedTemporaryFile() as ext_file:
-            ext_file.write(b'# comment line 1\n')
-            ext_file.write(b'# comment line 2\n')
-            for extension in self._file_ext:
-                prefix = spaces()
-                suffix = spaces()
-                line = '%s%s%s\n' % (prefix, extension, suffix,)
-                ext_file.write(line.encode())
-            ext_file.write(b'# comment line 3\n')
-            ext_file.flush()
-
-            all_ext = list(self._arg_ext)
-            all_ext.extend(e for e in self._file_ext if e not in self._arg_ext)
-
-            self.assertCountEqual(Dictionary(wl_file.name, self._arg_ext).extensions, self._arg_ext,
-                                  msg='Check of reading extensions from argument line failed')
-            self.assertCountEqual(Dictionary(wl_file.name, [], ext_file.name).extensions, self._file_ext,
-                                  msg='Check of reading extensions from file failed')
-            self.assertCountEqual(Dictionary(wl_file.name, self._arg_ext, ext_file.name).extensions, all_ext,
-                                  msg='Check of merging extensions form file and argument line failed')
-
+class DictionaryTest(unittest.TestCase):
     def test_formation(self):
-        with tempfile.NamedTemporaryFile() as wl_file:
-            wl_file.write(self._file_wl[0].encode())
-            wl_file.flush()
-            wl = Dictionary(wl_file.name, self._arg_ext)
-            for sample in wl:
-                self.assertIn(sample, self._file_formation_result, msg='Check of a dictionary formation failed')
+        extensions = ['txt', '%.bak', '.js']
+        word = 'index'
+        formation_result = ['index', 'index.txt', 'index.bak', 'index.js']
+
+        with tempfile.NamedTemporaryFile() as file:
+            file.write(word.encode())
+            file.flush()
+            dictionary = Dictionary(WordList(path=file.name), ExtensionList(extensions=extensions))
+            samples = [sample for sample in dictionary]
+            self.assertCountEqual(samples, formation_result, msg='Check of a dictionary formation failed')
 
     def test_length(self):
+        extensions = [random_name(k=3) for _ in range(5)]
         with tempfile.NamedTemporaryFile() as wl_file, tempfile.NamedTemporaryFile() as ext_file:
-            for word in self._file_wl:
-                wl_file.write(word.encode())
+            for _ in range(10):
+                wl_file.write(random_name().encode())
             wl_file.flush()
-            for extension in self._file_ext:
-                ext_file.write(extension.encode())
+            for _ in range(10):
+                ext_file.write(random_name(k=3).encode())
             ext_file.flush()
-            wl = Dictionary(wl_file.name, self._arg_ext, ext_file.name)
-            self.assertEqual(sum(1 for _ in wl), len(wl),
+            dictionary = Dictionary(word_list=WordList(path=wl_file.name),
+                                    extension_list=ExtensionList(extensions=extensions, path=ext_file.name))
+            self.assertEqual(sum(1 for _ in dictionary), len(dictionary),
                              msg='The actual dictionary length doesn\'t match with the calculated')
