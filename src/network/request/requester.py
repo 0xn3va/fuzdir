@@ -4,82 +4,63 @@ from urllib3 import Retry, disable_warnings
 from urllib3.exceptions import InsecureRequestWarning
 from urllib3.util import parse_url, Url
 
-from src.network.request.header_names import HeaderNames
-from src.network.request.request_error import RequestError
-from src.network.request.schemes import Schemes
+from src.network.network_utils import NetworkUtils
+from src.network.request.requester_error import RequesterError
+from src.network.request.utils.header_names import HeaderNames
+from src.network.request.utils.schemes import Schemes
 from src.network.request.throttle.throttle import Throttle
-from src.network.response.response import Response
-from src.network.response.response_type import ResponseType
-from src.utils.user_agents import UserAgents
 
 disable_warnings(InsecureRequestWarning)
 
 
 class Requester:
-    headers = {
-        HeaderNames.accept_lang: 'en-us',
-        HeaderNames.cache_control: 'max-age=0',
-    }
+    default_timeout = 5
+    default_retries = 3
+    _min_retries = 0
+    _max_retries = 5
 
-    def __init__(self, url: str, cookie: str = None, headers: dict = None, user_agent: str = None, timeout: int = 5,
-                 retries: int = 3, allow_redirects: bool = False, throttling_period: float = None, proxy: str = None):
+    _back_off_factor = 0.3
+    _status_force_list = {500, 502, 503, 504}
 
-        def add_retry_adapter(session: requests.Session, retries: int, backoff_factor: float = 0.3,
-                              status_forcelist: list = (500, 502, 503, 504,)):
-            retry = Retry(
-                total=retries,
-                read=retries,
-                connect=retries,
-                backoff_factor=backoff_factor,
-                status_forcelist=status_forcelist,
-            )
-            adapter = HTTPAdapter(max_retries=retry)
-            for s in Schemes.allowable:
-                session.mount('%s://' % (s,), adapter)
-
-        # url
+    def __init__(self, url: str, user_agent: str = None, cookie: str = None, headers: dict = None,
+                 allow_redirect: bool = False, timeout: int = default_timeout, retries: int = default_retries,
+                 throttling_period: float = None, proxy: str = None):
         parsed_url = parse_url(url)
-
         scheme = parsed_url.scheme or Schemes.default
         if scheme not in Schemes.allowable:
-            raise RequestError('Invalid scheme: %s' % (scheme,))
+            raise RequesterError('Invalid scheme: %s' % (scheme,))
         host = parsed_url.host
         if host is None:
-            raise RequestError('Invalid url: %s' % (url,))
-
+            raise RequesterError('Invalid url: %s' % (url,))
         port = parsed_url.port or Schemes.ports[scheme]
         path = parsed_url.path or '/'
         if not path.endswith('/'):
             path = '%s/' % (path,)
-
-        url = Url(scheme=scheme,
-                  auth=parsed_url.auth,
-                  host=host,
-                  port=port,
-                  path=path,
-                  query=parsed_url.query,
+        url = Url(scheme=scheme, auth=parsed_url.auth, host=host, port=port, path=path, query=parsed_url.query,
                   fragment=parsed_url.fragment)
-
         self._url = url.url
-        #
-        self.headers[HeaderNames.host] = '%s:%d' % (host, port,) if port != Schemes.ports[scheme] else host
-        #
         self._user_agent = user_agent
-        self._timeout = timeout
 
+        self._headers = dict([
+            (HeaderNames.accept_lang, 'en-us'),
+            (HeaderNames.cache_control, 'max-age=0'),
+            (HeaderNames.host, '%s:%d' % (host, port,) if port != Schemes.ports[scheme] else host)
+        ])
         if cookie is not None:
-            self.headers[HeaderNames.cookie] = cookie
-
+            self._headers[HeaderNames.cookie] = cookie
         if headers is not None:
-            self.headers.update(headers)
-
-        if retries < 0 or retries > 5:
-            raise RequestError('Invalid value of retries: %d, allowable values from 0 to 5 inclusive' % (retries,))
-
+            self._headers.update(headers)
+        self._allow_redirect = allow_redirect
+        self._timeout = timeout
+        if retries < self._min_retries or retries > self._max_retries:
+            raise RequesterError('Invalid value of retries: %d, allowable values from %d to %d inclusive'
+                                 % (retries, self._min_retries, self._max_retries))
         self._session = requests.Session()
-        add_retry_adapter(session=self._session, retries=retries)
-
-        self._allow_redirects = allow_redirects
+        adapter = HTTPAdapter(
+            max_retries=Retry(total=retries, read=retries, connect=retries, backoff_factor=self._back_off_factor,
+                              status_forcelist=self._status_force_list))
+        for s in Schemes.allowable:
+            self._session.mount('%s://' % (s,), adapter)
         self._throttle = Throttle(period=throttling_period)
         self._proxies = None if proxy is None else {scheme: proxy}
 
@@ -88,34 +69,24 @@ class Requester:
         return self._url
 
     def request(self, path: str):
-        @self._throttle
-        def get():
-            return self._request('GET', path)
+        throttle = self._throttle
 
-        return get()
+        @throttle
+        def get(func, *args):
+            return func(*args)
 
-    def _request(self, method, path: str):
-        try:
-            url = self._url + path
-            headers = dict(self.headers)
-            headers[HeaderNames.user_agent] = self._user_agent if self._user_agent is not None else UserAgents.random_ua()
-            response = self._session.request(
-                method=method,
-                url=url,
-                headers=headers,
-                timeout=self._timeout,
-                allow_redirects=self._allow_redirects,
-                proxies=self._proxies,
-                verify=False
-            )
-            return Response(ResponseType.response, response)
-        except requests.exceptions.TooManyRedirects as e:
-            raise RequestError('Too many redirects: %s' % (str(e),))
-        except requests.exceptions.SSLError:
-            raise RequestError('SSL error connection to server')
-        except requests.exceptions.ConnectionError:
-            raise RequestError('Failed to establish a connection with %s' % (self.url,))
-        except requests.exceptions.RetryError as e:
-            return Response(ResponseType.error, e)
-        except Exception as e:
-            raise RequestError(str(e))
+        return get(self._request, 'GET', path)
+
+    def _request(self, method: str, path: str):
+        url = self._url + path
+        headers = dict(self._headers)
+        headers[HeaderNames.user_agent] = self._user_agent or NetworkUtils.random_ua()
+        return self._session.request(
+            method=method,
+            url=url,
+            headers=headers,
+            timeout=self._timeout,
+            allow_redirects=self._allow_redirect,
+            proxies=self._proxies,
+            verify=False
+        )
