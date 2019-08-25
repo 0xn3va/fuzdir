@@ -1,3 +1,0 @@
-
-class EncodingError(Exception):
-    pass
