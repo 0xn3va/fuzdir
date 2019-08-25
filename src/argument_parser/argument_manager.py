@@ -3,7 +3,7 @@ import argparse
 from src import output
 from src.argument_parser.actions.store_readable_file_path import StoreReadableFilePath
 from src.argument_parser.actions.store_writable_file_path import StoreWritableFilePath
-from src.argument_parser.argument_parser_error import ArgumentParserError
+from src.argument_parser.argument_manager_error import ArgumentManagerError
 from src.argument_parser.actions.store_dict import StoreDict
 from src.argument_parser.actions.store_list import StoreList
 from src.core.fuzzer import Fuzzer
@@ -11,7 +11,7 @@ from src.network.request.requester import Requester
 from src.output.reports.report_type import ReportType
 
 
-class ArgumentParser:
+class ArgumentManager:
     _url_help = 'target URL'
     _wordlist_help = 'path to wordlist'
     _extensions_help = 'extension list separated by comma'
@@ -76,7 +76,7 @@ class ArgumentParser:
                 self.report_type = ReportType.plain_text
             # filter arguments
             self.conditions = args.conditions
-        except ArgumentParserError as e:
+        except ArgumentManagerError as e:
             output.line(parser.format_usage())
             output.error(str(e))
             exit(0)

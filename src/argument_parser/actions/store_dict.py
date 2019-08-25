@@ -1,6 +1,6 @@
 import argparse
 
-from src.argument_parser.argument_parser_error import ArgumentParserError
+from src.argument_parser.argument_manager_error import ArgumentManagerError
 
 
 class StoreDict(argparse.Action):
@@ -12,4 +12,4 @@ class StoreDict(argparse.Action):
             name, value = values.split(self._separator)
             getattr(namespace, self.dest).update({name: value})
         except ValueError:
-            raise ArgumentParserError(self._message_format % (values,))
+            raise ArgumentManagerError(self._message_format % (values,))

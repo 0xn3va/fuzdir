@@ -1,0 +1,3 @@
+
+class ArgumentManagerError(Exception):
+    pass
