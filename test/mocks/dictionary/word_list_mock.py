@@ -1,7 +1,7 @@
 import random
 import string
 
-from src.wordlist.thread_safe_iterator import thread_safe_iterator
+from src.dictionary.utils.thread_safe_iterator import thread_safe_iterator
 
 
 class WordlistMock:

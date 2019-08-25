@@ -13,7 +13,7 @@ from src.output.reports.report_type import ReportType
 
 class ArgumentManager:
     _url_help = 'target URL'
-    _wordlist_help = 'path to wordlist'
+    _word_list_help = 'path to word list'
     _extensions_help = 'extension list separated by comma'
     _extensions_file_help = 'path to file with extensions'
     _threads_help_format = 'the maximum number of threads that can be used to requests, by default %d threads'
@@ -52,8 +52,8 @@ class ArgumentManager:
             args = parser.parse_args()
             # necessary arguments
             self.url = args.url
-            self.wordlist = args.wordlist
-            # worlist arguments
+            self.word_list = args.word_list
+            # extensions arguments
             self.extensions = args.extensions
             self.extensions_file = args.extensions_file
             # connection arguments
@@ -87,10 +87,10 @@ class ArgumentManager:
         # necessary group
         necessary_group = parser.add_argument_group('necessary parameters')
         necessary_group.add_argument('-u', '--url', dest='url', action='store', required=True, help=self._url_help)
-        necessary_group.add_argument('-w', '--wordlist', dest='wordlist', action=StoreReadableFilePath, required=True,
-                                     metavar='PATH', help=self._wordlist_help)
-        # wordlist group
-        wordlist_group = parser.add_argument_group('wordlist settings')
+        necessary_group.add_argument('-w', '--wordlist', dest='word_list', action=StoreReadableFilePath, required=True,
+                                     metavar='PATH', help=self._word_list_help)
+        # extensions group
+        wordlist_group = parser.add_argument_group('extensions settings')
         wordlist_group.add_argument('-e', '--extensions', default=[], dest='extensions', action=StoreList,
                                     help=self._extensions_help)
         wordlist_group.add_argument('-E', '--extensions-file', dest='extensions_file', action=StoreReadableFilePath,

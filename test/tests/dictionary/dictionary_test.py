@@ -2,7 +2,7 @@ import random
 import tempfile
 import unittest
 
-from src.wordlist.wordlist import Wordlist
+from src.dictionary.dictionary import Dictionary
 
 
 class WordlistTest(unittest.TestCase):
@@ -30,20 +30,20 @@ class WordlistTest(unittest.TestCase):
             all_ext = list(self._arg_ext)
             all_ext.extend(e for e in self._file_ext if e not in self._arg_ext)
 
-            self.assertCountEqual(Wordlist(wl_file.name, self._arg_ext).extensions, self._arg_ext,
+            self.assertCountEqual(Dictionary(wl_file.name, self._arg_ext).extensions, self._arg_ext,
                                   msg='Check of reading extensions from argument line failed')
-            self.assertCountEqual(Wordlist(wl_file.name, [], ext_file.name).extensions, self._file_ext,
+            self.assertCountEqual(Dictionary(wl_file.name, [], ext_file.name).extensions, self._file_ext,
                                   msg='Check of reading extensions from file failed')
-            self.assertCountEqual(Wordlist(wl_file.name, self._arg_ext, ext_file.name).extensions, all_ext,
+            self.assertCountEqual(Dictionary(wl_file.name, self._arg_ext, ext_file.name).extensions, all_ext,
                                   msg='Check of merging extensions form file and argument line failed')
 
     def test_formation(self):
         with tempfile.NamedTemporaryFile() as wl_file:
             wl_file.write(self._file_wl[0].encode())
             wl_file.flush()
-            wl = Wordlist(wl_file.name, self._arg_ext)
+            wl = Dictionary(wl_file.name, self._arg_ext)
             for sample in wl:
-                self.assertIn(sample, self._file_formation_result, msg='Check of a wordlist formation failed')
+                self.assertIn(sample, self._file_formation_result, msg='Check of a dictionary formation failed')
 
     def test_length(self):
         with tempfile.NamedTemporaryFile() as wl_file, tempfile.NamedTemporaryFile() as ext_file:
@@ -53,6 +53,6 @@ class WordlistTest(unittest.TestCase):
             for extension in self._file_ext:
                 ext_file.write(extension.encode())
             ext_file.flush()
-            wl = Wordlist(wl_file.name, self._arg_ext, ext_file.name)
+            wl = Dictionary(wl_file.name, self._arg_ext, ext_file.name)
             self.assertEqual(sum(1 for _ in wl), len(wl),
-                             msg='The actual wordlist length doesn\'t match with the calculated')
+                             msg='The actual dictionary length doesn\'t match with the calculated')

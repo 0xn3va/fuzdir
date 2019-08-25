@@ -1,4 +1,3 @@
-from src.utils.file_utils import FileUtils
 from src.wordlist.encoding import Encoding
 from src.wordlist.thread_safe_iterator import thread_safe_iterator
 
@@ -9,15 +8,11 @@ class Wordlist:
     _filename_format = '%s.%s'
 
     def __init__(self, wordlist_path: str, extensions: list, extensions_file: str = None):
-        if not FileUtils.is_readable(wordlist_path):
-            raise IOError('The wordlist file does not exist or access denied')
         self._wordlist_path = wordlist_path
         self._wordlist_size = sum(1 for _ in self._read_file(self._wordlist_path))
         # extensions from cli and file
-        self._extensions = []
+        self._extensions = set()
         if extensions_file is not None:
-            if not FileUtils.is_readable(extensions_file):
-                raise IOError('The extensions file does not exist or access denied')
             self._extensions.extend(self._read_file(extensions_file))
         for extension in extensions:
             if extension not in self._extensions:
