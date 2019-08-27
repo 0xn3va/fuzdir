@@ -3,7 +3,7 @@ import tempfile
 import unittest
 
 from src.dictionary.utils.file_reader import FileReader
-from test.mocks.utils import random_name
+from test.mocks.utils import random_string
 
 
 class FileReaderTest(unittest.TestCase):
@@ -11,7 +11,7 @@ class FileReaderTest(unittest.TestCase):
         def spaces():
             return random.choice([' ', '\t']) * random.randint(0, 1)
 
-        data = [random_name() for _ in range(10)]
+        data = [random_string() for _ in range(10)]
         with tempfile.NamedTemporaryFile() as file:
             file.write(b'# comment line 1\n')
             file.write(b'# comment line 2\n')
