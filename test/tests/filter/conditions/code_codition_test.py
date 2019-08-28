@@ -1,28 +1,27 @@
 import unittest
 
-from src.filter.conditions.code_condition import CodeCondition
+from src.filter.condition.implement.status_code_condition import StatusCodeCondition
 from src.filter.filter_error import FilterError
 from src.network.request.requester import Requester
 from test.mocks.httpserver.http_request_handler import HTTPRequestHandler
 from test.mocks.httpserver.http_server_manager import HTTPServerManager
-from test.mocks.utils import random_port
-from test.mocks.wordlist_mock import WordlistMock
+from test.mocks.utils import random_port, random_string
 
 
 class CodeConditionTest(unittest.TestCase):
     def test_setup(self):
-        condition = CodeCondition()
+        condition = StatusCodeCondition()
         # empty line
         with self.assertRaises(FilterError, msg='Check on setup with empty line failed'):
-            condition.setup(condition_args='')
+            condition.setup(args='', area='')
         # not numbers
         with self.assertRaises(FilterError, msg='Check on setup with non number failed'):
-            condition.setup(condition_args='a,a')
+            condition.setup(args='a,a', area='')
         # incorrect status code
         with self.assertRaises(FilterError, msg='Check on setup with incorrect status code failed'):
-            condition.setup(condition_args='0')
+            condition.setup(args='0', area='')
         # list of status codes with separator in the end of line
-        condition.setup(condition_args='200,404,')
+        condition.setup(args='200,404,', area='')
         self.assertListEqual(condition._codes, [200, 404], msg='Check on setup with separator in the end line failed')
 
     def test_match(self):
@@ -30,11 +29,10 @@ class CodeConditionTest(unittest.TestCase):
             def do_GET(self):
                 self._set_headers(status_code=200, headers={'Content-Type': 'text/html', 'Content-Length': 0})
 
-        condition = CodeCondition()
-        wordlist = iter(WordlistMock())
+        condition = StatusCodeCondition()
         with HTTPServerManager(handler=Handler, port=random_port()) as server:
-            response = Requester(url=server.url).request(next(wordlist))
-            condition.setup(condition_args='200')
-            self.assertTrue(condition.match(response.body), msg='Check on matching of right status code failed')
-            condition.setup(condition_args='400')
-            self.assertFalse(condition.match(response.body), msg='Check on matching of wrong status code failed')
+            response = Requester(url=server.url).request(random_string())
+            condition.setup(args='200', area='')
+            self.assertTrue(condition.match(response), msg='Check on matching of right status code failed')
+            condition.setup(args='400', area='')
+            self.assertFalse(condition.match(response), msg='Check on matching of wrong status code failed')
