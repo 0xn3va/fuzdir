@@ -28,19 +28,19 @@ class ArgumentManager:
     _allow_redirect_help = 'allow follow up to redirection'
     _logging_help = 'verbose logging'
     _plain_report_help = 'a plain text reporting about the found status code, content length and URL'
-    _filter_help = 'conditions for responses matching\n' \
-                   + 'available conditions:\n' \
-                   + '  code\t\tfilter by status code\n' \
-                   + '  length\tfilter by content length\n' \
-                   + '  grep\t\tfilter by regex in response headers or / and body\n' \
-                   + 'usage format:\n' \
-                   + '  [ignore]:<condition>:[<mode>]=<args>\n' \
-                   + 'examples:\n' \
-                   + '  code=200,500\t\tmatch responses with 200 or 500 status code\n' \
-                   + '  ignore:code=404\tmatch all responses exclude with 404 status code\n' \
-                   + '  length=0-1337,7331\t\tmatch all responses with content between 0 and 1337 or equals 7331\n' \
-                   + '  grep=\'regex\'\t\tmatch in response headers and body\n' \
-                   + '  grep:body=\'regex\'\tmatch in response body\n'
+    _conditions_help = 'conditions for responses matching\n' \
+                       + 'available conditions:\n' \
+                       + '  code\t\tfilter by status code\n' \
+                       + '  length\tfilter by content length\n' \
+                       + '  grep\t\tfilter by regex in response headers or / and body\n' \
+                       + 'usage format:\n' \
+                       + '  [ignore]:<condition>:[<area>]=<args>\n' \
+                       + 'examples:\n' \
+                       + '  code=200,500\t\tmatch responses with 200 or 500 status code\n' \
+                       + '  ignore:code=404\tmatch all responses exclude with 404 status code\n' \
+                       + '  length=0-1337,7331\t\tmatch all responses with content between 0 and 1337 or equals 7331\n' \
+                       + '  grep=\'regex\'\t\tmatch in response headers and body\n' \
+                       + '  grep:body=\'regex\'\tmatch in response body\n'
     _examples = 'examples:\n' \
                 + '  fuzdir -u https://example.com -w wordlist.txt\n' \
                 + '  fuzdir -u https://example.com -w wordlist.txt -e html,js,php -x code=200\n' \
@@ -126,6 +126,6 @@ class ArgumentManager:
                                   help=self._plain_report_help)
         # filter arguments
         filter_group = parser.add_argument_group('filter')
-        filter_group.add_argument('-x', default='', dest='conditions', action='store', help=self._filter_help)
+        filter_group.add_argument('-x', default='', dest='conditions', action='store', help=self._conditions_help)
 
         return parser
