@@ -1,3 +1,0 @@
-
-class RequesterError(Exception):
-    pass
