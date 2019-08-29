@@ -61,8 +61,6 @@ class Fuzzer:
                     output.progress_bar(float(self._index_increment()) / float(self._dictionary_len) * 100)
                 except StopIteration:
                     break
-                except requests.exceptions.RetryError as e:
-                    output.error(str(e))
         except requests.exceptions.TooManyRedirects as e:
             self._cancel('Too many redirects: %s' % (str(e),))
         except requests.exceptions.SSLError:
