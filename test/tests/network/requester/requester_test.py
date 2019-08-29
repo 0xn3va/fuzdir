@@ -6,9 +6,9 @@ import unittest
 import requests
 import urllib3
 
-from src.network.request.requester_error import RequesterError
-from src.network.request.requester import Requester
-from src.network.request.throttle.confidence_interval import ConfidenceInterval
+from src.network.requester.requester_error import RequesterError
+from src.network.requester.requester import Requester
+from src.network.requester.throttle.confidence_interval import ConfidenceInterval
 from src.utils.singleton import Singleton
 from test.mocks.httpserver.http_request_handler import HTTPRequestHandler
 from test.mocks.httpserver.http_server_manager import HTTPServerManager

@@ -2,7 +2,7 @@ import random
 
 from requests import Response
 
-from src.network.request.utils.header_names import HeaderNames
+from src.network.requester.utils.header_names import HeaderNames
 
 
 class NetworkUtils:

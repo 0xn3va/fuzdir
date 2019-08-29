@@ -2,7 +2,7 @@ import unittest
 
 from src.filter.condition.implement.content_length_condition import ContentLengthCondition
 from src.filter.filter_error import FilterError
-from src.network.request.requester import Requester
+from src.network.requester.requester import Requester
 from test.mocks.httpserver.http_request_handler import HTTPRequestHandler
 from test.mocks.httpserver.http_server_manager import HTTPServerManager
 from test.mocks.utils import random_port, random_string

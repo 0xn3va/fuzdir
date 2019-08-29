@@ -12,8 +12,8 @@ from src.dictionary.utils.encoding_error import EncodingError
 from src.dictionary.dictionary import Dictionary
 from src.filter.filter import Filter
 from src.filter.filter_error import FilterError
-from src.network.request.requester_error import RequesterError
-from src.network.request.requester import Requester
+from src.network.requester.requester_error import RequesterError
+from src.network.requester.requester import Requester
 
 MAJOR_VERSION = 0
 MINOR_VERSION = 1

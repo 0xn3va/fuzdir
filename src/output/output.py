@@ -6,7 +6,7 @@ from requests import Response
 from urllib3.util import parse_url
 
 from src.network.network_utils import NetworkUtils
-from src.network.request.utils.header_names import HeaderNames
+from src.network.requester.utils.header_names import HeaderNames
 from src.utils.singleton import Singleton
 
 

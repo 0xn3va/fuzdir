@@ -7,7 +7,7 @@ from src.argument_parser.argument_manager_error import ArgumentManagerError
 from src.argument_parser.actions.store_dict import StoreDict
 from src.argument_parser.actions.store_list import StoreList
 from src.core.fuzzer import Fuzzer
-from src.network.request.requester import Requester
+from src.network.requester.requester import Requester
 from src.output.report.report_type import ReportType
 
 
