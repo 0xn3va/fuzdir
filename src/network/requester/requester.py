@@ -81,12 +81,10 @@ class Requester:
         url = self._url + path
         headers = dict(self._headers)
         headers[HeaderNames.user_agent] = self._user_agent or NetworkUtils.random_ua()
-        return self._session.request(
-            method=method,
-            url=url,
-            headers=headers,
-            timeout=self._timeout,
-            allow_redirects=self._allow_redirect,
-            proxies=self._proxies,
-            verify=False
-        )
+        return self._session.request(method=method,
+                                     url=url,
+                                     headers=headers,
+                                     timeout=self._timeout,
+                                     allow_redirects=self._allow_redirect,
+                                     proxies=self._proxies,
+                                     verify=False)
