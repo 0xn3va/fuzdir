@@ -8,8 +8,6 @@ class ConfidenceInterval:
     _window_size = 63
     _threshold = int(_window_size * 0.5)
     _min_mean = 0.05
-    #
-    _logging_format = 'Period: %.4f, borders: [%.4f, %.4f]'
 
     def __init__(self, period: float = None):
         self._fixed_period = period is not None
@@ -71,7 +69,7 @@ class ConfidenceInterval:
         self._period = period
         left, right = self._three_sigma_borders()
         self._borders = (left, right)
-        logging.debug(self._logging_format % (self._period, left, right))
+        logging.debug('Changed period: %.4f, borders: [%.4f, %.4f]' % (self._period, left, right,))
 
     def _three_sigma_borders(self):
         window = 3 * sqrt(self._variance)

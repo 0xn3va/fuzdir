@@ -1,3 +1,4 @@
+import logging
 import threading
 
 from src.output.report.implement.plain_report import PlainReport
@@ -14,9 +15,10 @@ class ReportManager:
         self._report = None
 
     def config(self, report_type: ReportType, filename: str):
-        # shutdown method must be called for reconfig
         with self._lock:
             if report_type is not None:
+                if self._report is not None:
+                    logging.warning('Shutdown is\'t called before reconfiguration')
                 self._report = self._handlers[report_type](filename)
 
     def shutdown(self):

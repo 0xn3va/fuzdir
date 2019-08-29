@@ -1,3 +1,4 @@
+import logging
 import threading
 
 import requests
@@ -78,6 +79,7 @@ class Fuzzer:
     def _cancel(self, e: str):
         with self._is_cancel_lock:
             if not self._is_cancel:
+                logging.debug('Fuzzing failed, an error has occurred: %s' % (e,))
                 self._is_cancel = True
                 output.error(e)
 

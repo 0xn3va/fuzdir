@@ -92,7 +92,9 @@ class Controller:
 
     def start(self):
         try:
+            logging.debug('Started fuzzing')
             self._fuzzer.start()
         finally:
+            logging.debug('Shutdown')
             logging.shutdown()
             output.shutdown()
