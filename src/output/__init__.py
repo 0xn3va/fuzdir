@@ -1,10 +1,9 @@
 from requests import Response
 
 from src.output.output import Output
-from src.output.reports.plain_report import PlainReport
-from src.output.reports.report_manager import ReportManager
-from src.output.reports.report_type import ReportType
-from src.output.splash_type import SplashType
+from src.output.report.implement.plain_report import PlainReport
+from src.output.report_manager import ReportManager
+from src.output.report.report_type import ReportType
 
 output = Output()
 report = ReportManager()
@@ -22,8 +21,12 @@ def line(line: str):
     output.line(line)
 
 
-def splash(splash_type: SplashType, *args):
-    output.splash(splash_type, *args)
+def banner(banner: str):
+    output.banner(banner)
+
+
+def summary(log_path: str, threads: int, dictionary_size: int, target: str):
+    output.summary(log_path, threads, dictionary_size, target)
 
 
 def progress_bar(percent: float):

@@ -1,10 +1,13 @@
 import threading
 
-from src.output.reports.plain_report import PlainReport
-from src.output.reports.report_type import ReportType
+from src.output.report.implement.plain_report import PlainReport
+from src.output.report.report_type import ReportType
 
 
 class ReportManager:
+    _handlers = {
+        ReportType.plain_text: PlainReport
+    }
 
     def __init__(self):
         self._lock = threading.Lock()
@@ -13,8 +16,7 @@ class ReportManager:
     def config(self, report_type: ReportType, filename: str):
         # shutdown method must be called for reconfig
         with self._lock:
-            if report_type == ReportType.plain_text:
-                self._report = PlainReport(filename)
+            self._report = self._handlers[report_type](filename)
 
     def shutdown(self):
         with self._lock:
