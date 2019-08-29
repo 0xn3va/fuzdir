@@ -16,7 +16,8 @@ class ReportManager:
     def config(self, report_type: ReportType, filename: str):
         # shutdown method must be called for reconfig
         with self._lock:
-            self._report = self._handlers[report_type](filename)
+            if report_type is not None:
+                self._report = self._handlers[report_type](filename)
 
     def shutdown(self):
         with self._lock:
