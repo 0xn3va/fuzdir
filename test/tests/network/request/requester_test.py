@@ -2,7 +2,6 @@ import random
 import threading
 import time
 import unittest
-import warnings
 
 import requests
 import urllib3
@@ -14,8 +13,6 @@ from src.utils.singleton import Singleton
 from test.mocks.httpserver.http_request_handler import HTTPRequestHandler
 from test.mocks.httpserver.http_server_manager import HTTPServerManager
 from test.mocks.utils import random_port, random_string
-
-warnings.filterwarnings(action="ignore", message="unclosed", category=ResourceWarning)
 
 
 class RequesterTest(unittest.TestCase):
