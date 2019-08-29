@@ -8,7 +8,7 @@ from src.argument_parser.actions.store_dict import StoreDict
 from src.argument_parser.actions.store_list import StoreList
 from src.core.fuzzer import Fuzzer
 from src.network.request.requester import Requester
-from src.output.reports.report_type import ReportType
+from src.output.report.report_type import ReportType
 
 
 class ArgumentManager:
