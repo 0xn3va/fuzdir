@@ -1,3 +1,0 @@
-
-class ArgumentParserError(Exception):
-    pass

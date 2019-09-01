@@ -1,20 +1,23 @@
+import logging
 import threading
 
+import requests
+
 from src import output
-from src.network.response.response_type import ResponseType
-from src.wordlist.wordlist import Wordlist
+from src.dictionary.dictionary import Dictionary
 from src.filter.filter import Filter
-from src.network.request.request_error import RequestError
-from src.network.request.requester import Requester
+from src.network.requester.requester import Requester
 
 
 class Fuzzer:
-    def __init__(self, wordlist: Wordlist, requester: Requester, filter: Filter, threads: int = 1):
-        self._wordlist = wordlist
+    default_threads = 10
+
+    def __init__(self, dictionary: Dictionary, requester: Requester, filter: Filter, threads: int = default_threads):
+        self._dictionary = dictionary
         self._requester = requester
         self._filter = filter
         self.threads = threads
-        self._wordlist_len = len(self._wordlist)
+        self._dictionary_len = len(self._dictionary)
         self._is_cancel_lock = threading.Lock()
         self._is_cancel = False
         self._paths = None
@@ -25,7 +28,7 @@ class Fuzzer:
         threads = set()
         try:
             self._is_cancel = False
-            self._paths = iter(self._wordlist)
+            self._paths = iter(self._dictionary)
             self._index = 0
 
             for _ in range(self.threads):
@@ -50,20 +53,21 @@ class Fuzzer:
             while True:
                 try:
                     path = next(self._paths)
-                except StopIteration:
-                    break
-                response = self._requester.request(path=path)
-                if self._canceled():
-                    break
-                if response.type == ResponseType.error:
-                    output.error(response.body)
-                else:
-                    response = response.body
+                    response = self._requester.request(path=path)
+                    if self._canceled():
+                        break
                     if self._filter.inspect(response):
                         output.response(response)
-
-                output.progress_bar(float(self._index_increment()) / float(self._wordlist_len) * 100)
-        except RequestError as e:
+                    output.progress_bar(self._index_increment() / self._dictionary_len * 100)
+                except StopIteration:
+                    break
+        except requests.exceptions.TooManyRedirects as e:
+            self._cancel('Too many redirects: %s' % (str(e),))
+        except requests.exceptions.SSLError:
+            self._cancel('SSL error connection to server')
+        except requests.exceptions.ConnectionError:
+            self._cancel('Failed to establish a connection with %s' % (self._requester.url,))
+        except Exception as e:
             self._cancel(str(e))
 
     def _canceled(self):
@@ -73,6 +77,7 @@ class Fuzzer:
     def _cancel(self, e: str):
         with self._is_cancel_lock:
             if not self._is_cancel:
+                logging.debug('Fuzzing failed, an error has occurred: %s' % (e,))
                 self._is_cancel = True
                 output.error(e)
 

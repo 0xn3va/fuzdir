@@ -1,3 +1,0 @@
-
-class RequestError(Exception):
-    pass
