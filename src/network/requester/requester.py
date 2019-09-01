@@ -20,7 +20,7 @@ class Requester:
     _max_retries = 5
 
     _back_off_factor = 0.3
-    _status_force_list = {500, 502, 503, 504}
+    _status_force_list = {502, 503, 504}
 
     def __init__(self, url: str, user_agent: str = None, cookie: str = None, headers: dict = None,
                  allow_redirect: bool = False, timeout: int = default_timeout, retries: int = default_retries,
@@ -36,8 +36,8 @@ class Requester:
         path = parsed_url.path or '/'
         if not path.endswith('/'):
             path = '%s/' % (path,)
-        url = Url(scheme=scheme, auth=parsed_url.auth, host=host, port=port, path=path, query=parsed_url.query,
-                  fragment=parsed_url.fragment)
+        url = Url(scheme=scheme, auth=parsed_url.auth, host=host, port=port if port != Schemes.ports[scheme] else None,
+                  path=path, query=parsed_url.query, fragment=parsed_url.fragment)
         self._url = url.url
         self._user_agent = user_agent
 
@@ -78,11 +78,10 @@ class Requester:
         return get(self._request, 'GET', path)
 
     def _request(self, method: str, path: str):
-        url = self._url + path
         headers = dict(self._headers)
         headers[HeaderNames.user_agent] = self._user_agent or NetworkUtils.random_ua()
         return self._session.request(method=method,
-                                     url=url,
+                                     url=self._url + path,
                                      headers=headers,
                                      timeout=self._timeout,
                                      allow_redirects=self._allow_redirect,
