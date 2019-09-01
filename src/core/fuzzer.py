@@ -58,7 +58,7 @@ class Fuzzer:
                         break
                     if self._filter.inspect(response):
                         output.response(response)
-                    output.progress_bar(float(self._index_increment()) / float(self._dictionary_len) * 100)
+                    output.progress_bar(self._index_increment() / self._dictionary_len * 100)
                 except StopIteration:
                     break
         except requests.exceptions.TooManyRedirects as e:
