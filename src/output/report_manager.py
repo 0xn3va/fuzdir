@@ -1,13 +1,15 @@
 import logging
 import threading
 
+from src.output.report.implement.json_report import JSONReport
 from src.output.report.implement.plain_report import PlainReport
 from src.output.report.report_type import ReportType
 
 
 class ReportManager:
     _handlers = {
-        ReportType.plain_text: PlainReport
+        ReportType.plain_text: PlainReport,
+        ReportType.json_report: JSONReport
     }
 
     def __init__(self):
