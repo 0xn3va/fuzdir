@@ -3,6 +3,8 @@ import unittest
 from src.filter.condition.implement.content_length_condition import ContentLengthCondition
 from src.filter.filter_error import FilterError
 from src.network.requester.requester import Requester
+
+from test import ignore_resource_warning
 from test.mocks.httpserver.http_request_handler import HTTPRequestHandler
 from test.mocks.httpserver.http_server_manager import HTTPServerManager
 from test.mocks.utils import random_port, random_string
@@ -25,6 +27,7 @@ class ContentLengthConditionTest(unittest.TestCase):
         self.assertListEqual(condition._ranges, [(10, 100), (10, 10)],
                              msg='Check on setup with separator in the end line failed')
 
+    @ignore_resource_warning
     def test_match(self):
         class Handler(HTTPRequestHandler):
             def do_GET(self):

@@ -3,6 +3,8 @@ import unittest
 from src.filter.filter import Filter
 from src.filter.filter_error import FilterError
 from src.network.requester.requester import Requester
+
+from test import ignore_resource_warning
 from test.mocks.httpserver.http_request_handler import HTTPRequestHandler
 from test.mocks.httpserver.http_server_manager import HTTPServerManager
 from test.mocks.utils import random_port, random_string
@@ -27,6 +29,7 @@ class FilterTest(unittest.TestCase):
             self.assertGreater(c1.priority.value, c2.priority.value,
                                msg='Check on condition sorting by priority failed')
 
+    @ignore_resource_warning
     def test_inspect(self):
         class Handler(HTTPRequestHandler):
             def do_GET(self):

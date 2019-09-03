@@ -3,6 +3,7 @@ import unittest
 from src.filter.condition.implement.grep_condition import GrepCondition
 from src.filter.filter_error import FilterError
 from src.network.requester.requester import Requester
+from test import ignore_resource_warning
 from test.mocks.httpserver.http_request_handler import HTTPRequestHandler
 from test.mocks.httpserver.http_server_manager import HTTPServerManager
 from test.mocks.utils import random_port, random_string
@@ -16,6 +17,7 @@ class GrepConditionTest(unittest.TestCase):
         with self.assertRaises(FilterError, msg='Check on invalid grep part failed'):
             condition.setup(args='', area='test')
 
+    @ignore_resource_warning
     def test_match(self):
         class Handler(HTTPRequestHandler):
             def do_GET(self):

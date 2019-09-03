@@ -10,6 +10,8 @@ from src.network.requester.requester_error import RequesterError
 from src.network.requester.requester import Requester
 from src.network.requester.throttle.confidence_interval import ConfidenceInterval
 from src.utils.singleton import Singleton
+
+from test import ignore_resource_warning
 from test.mocks.httpserver.http_request_handler import HTTPRequestHandler
 from test.mocks.httpserver.http_server_manager import HTTPServerManager
 from test.mocks.utils import random_port, random_string
@@ -24,11 +26,9 @@ class RequesterTest(unittest.TestCase):
         http_scheme = 'http'
         file_scheme = 'file'
         hostname = 'localhost'
-        port = 80
-        full_url_format = '%s://%s:%d/'
         # scheme and port by default
         requester = Requester(url=hostname)
-        self.assertEqual(requester.url, full_url_format % (http_scheme, hostname, port,),
+        self.assertEqual(requester.url, '%s://%s/' % (http_scheme, hostname,),
                          msg='Check for setting scheme and port by default failed')
         # unknown scheme
         with self.assertRaises(RequesterError, msg='Check for unknown scheme failed'):
@@ -37,24 +37,26 @@ class RequesterTest(unittest.TestCase):
         with self.assertRaises(RequesterError, msg='Check for incorrect hostname failed'):
             Requester(url='%s://%s' % (http_scheme, '',))
         # custom port
-        custom_port_url = full_url_format % (http_scheme, hostname, random_port(),)
+        custom_port_url = '%s://%s:%d/' % (http_scheme, hostname, random_port(),)
         requester = Requester(url=custom_port_url)
         self.assertEqual(requester.url, custom_port_url, msg='Check for setting custom port failed')
         # non-root path
         path = '%s/%s' % (random_string(), random_string(),)
         requester = Requester(url='%s://%s/%s' % (http_scheme, hostname, path,))
-        self.assertEqual(requester.url, '%s://%s:%d/%s/' % (http_scheme, hostname, port, path,),
+        self.assertEqual(requester.url, '%s://%s/%s/' % (http_scheme, hostname, path,),
                          msg='Check for fuzzing by non-root path failed')
 
+    @ignore_resource_warning
     def test_retry(self):
         class Handler(HTTPRequestHandler):
             def do_GET(self):
-                self._set_headers(status_code=500, headers={'Content-Type': 'text/html', 'Content-Length': 0})
+                self._set_headers(status_code=502, headers={'Content-Type': 'text/html', 'Content-Length': 0})
 
         with HTTPServerManager(handler=Handler, port=random_port()) as server:
             with self.assertRaises(requests.exceptions.RetryError,  msg='Check a max retries exceeded failed'):
                 _ = Requester(url=server.url).request(random_string())
 
+    @ignore_resource_warning
     def test_proxy(self):
         class Handler(HTTPRequestHandler):
             pass
@@ -73,6 +75,7 @@ class RequesterTest(unittest.TestCase):
                 requester = Requester(url=server.url, proxy='socks5://localhost:%d' % (random_port(),))
                 _ = requester.request(random_string())
 
+    @ignore_resource_warning
     def test_throttle_fixed(self):
         class Handler(HTTPRequestHandler):
             pass
@@ -89,6 +92,7 @@ class RequesterTest(unittest.TestCase):
                                     msg='Check on fixed throttling period failed')
                 prev_time = current_time
 
+    @ignore_resource_warning
     def test_throttle_dynamic(self):
         class Handler(HTTPRequestHandler, metaclass=Singleton):
             delta = 0.001
