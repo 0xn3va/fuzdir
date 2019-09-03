@@ -1,6 +1,7 @@
 import random
 
 from requests import Response
+from urllib3.util import parse_url
 
 from src.network.requester.utils.header_names import HeaderNames
 
@@ -15,6 +16,10 @@ class NetworkUtils:
         except (KeyError, ValueError):
             # length of responses body
             return len(response.content)
+
+    @staticmethod
+    def path(response: Response) -> str:
+        return parse_url(response.url).path or '/'
 
     @staticmethod
     def random_ua():
