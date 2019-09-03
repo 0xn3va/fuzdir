@@ -16,8 +16,10 @@ class Report(ABC):
         finally:
             self._file.close()
 
-    def _write(self, *args):
-        print(*args, flush=True, file=self._file)
+    def _write(self, *args, **kwargs):
+        kwargs['flush'] = True
+        kwargs['file'] = self._file
+        print(*args, **kwargs)
 
     @abstractmethod
     def write(self, response: Response):

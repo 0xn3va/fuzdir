@@ -27,7 +27,8 @@ class ArgumentManager:
     _header_help = 'pass custom header(s)'
     _allow_redirect_help = 'allow follow up to redirection'
     _logging_help = 'verbose logging'
-    _plain_report_help = 'a plain text reporting about the found status code, content length and URL'
+    _plain_report_help = 'a plain text reporting about the found status code, content length and path'
+    _json_report_help = 'a reporting in JSON about the found status code, content length and path'
     _conditions_help = 'conditions for responses matching\n' \
                        + 'available conditions:\n' \
                        + '  code\t\tfilter by status code\n' \
@@ -71,9 +72,11 @@ class ArgumentManager:
             self.verbose = args.verbose
             # report arguments
             self.report_type = None
-            self.report_path = args.plain_report  # or args.json_report
+            self.report_path = args.plain_report or args.json_report
             if args.plain_report is not None:
                 self.report_type = ReportType.plain_text
+            elif args.json_report is not None:
+                self.report_type = ReportType.json_report
             # filter arguments
             self.conditions = args.conditions
         except ArgumentManagerError as e:
@@ -124,6 +127,8 @@ class ArgumentManager:
         report_group = report_group.add_mutually_exclusive_group()
         report_group.add_argument('--plain-report', dest='plain_report', action=StoreWritableFilePath, metavar='PATH',
                                   help=self._plain_report_help)
+        report_group.add_argument('--json-report', dest='json_report', action=StoreWritableFilePath, metavar='PATH',
+                                  help=self._json_report_help)
         # filter arguments
         filter_group = parser.add_argument_group('filter')
         filter_group.add_argument('-x', default='', dest='conditions', action='store', help=self._conditions_help)
