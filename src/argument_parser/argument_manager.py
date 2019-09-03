@@ -88,7 +88,7 @@ class ArgumentManager:
         parser = argparse.ArgumentParser(prog='fuzdir', epilog=self._examples,
                                          formatter_class=argparse.RawTextHelpFormatter)
         # necessary group
-        necessary_group = parser.add_argument_group('necessary parameters')
+        necessary_group = parser.add_argument_group('necessary arguments')
         necessary_group.add_argument('-u', '--url', dest='url', action='store', required=True, help=self._url_help)
         necessary_group.add_argument('-w', '--wordlist', dest='word_list', action=StoreReadableFilePath, required=True,
                                      metavar='PATH', help=self._word_list_help)
