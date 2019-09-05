@@ -22,7 +22,7 @@ class ArgumentManager:
     _throttling_help = 'delay time in seconds (float) between requests sending'
     _proxy_help = 'HTTP or SOCKS5 proxy\n' \
                   + 'usage format:\n' \
-                  + '   [http|socks5]://user:pass@host:port\n'
+                  + '  [http|socks5]://user:pass@host:port\n'
     _user_agent_help = 'custom user agent, by default setting random user agent'
     _header_help = 'pass custom header(s)'
     _allow_redirect_help = 'allow follow up to redirection'
@@ -38,10 +38,10 @@ class ArgumentManager:
                        + '  [ignore]:<condition>:[<area>]=<args>\n' \
                        + 'examples:\n' \
                        + '  code=200,500\t\tmatch responses with 200 or 500 status code\n' \
-                       + '  ignore:code=404\tmatch all responses exclude with 404 status code\n' \
-                       + '  length=0-1337,7331\t\tmatch all responses with content between 0 and 1337 or equals 7331\n' \
-                       + '  grep=\'regex\'\t\tmatch in response headers and body\n' \
-                       + '  grep:body=\'regex\'\tmatch in response body\n'
+                       + '  ignore:code=404\tmatch responses exclude with 404 status code\n' \
+                       + '  length=0-1337,7331\tmatch responses with content length between 0 and 1337 or equals 7331\n' \
+                       + '  grep=\'regex\'\t\tmatch responses with \'regex\' in headers or body\n' \
+                       + '  grep:body=\'regex\'\tmatch responses with \'regex\' in body\n'
     _examples = 'examples:\n' \
                 + '  fuzdir -u https://example.com -w wordlist.txt\n' \
                 + '  fuzdir -u https://example.com -w wordlist.txt -e html,js,php -x code=200\n' \
@@ -88,7 +88,7 @@ class ArgumentManager:
         parser = argparse.ArgumentParser(prog='fuzdir', epilog=self._examples,
                                          formatter_class=argparse.RawTextHelpFormatter)
         # necessary group
-        necessary_group = parser.add_argument_group('necessary parameters')
+        necessary_group = parser.add_argument_group('necessary arguments')
         necessary_group.add_argument('-u', '--url', dest='url', action='store', required=True, help=self._url_help)
         necessary_group.add_argument('-w', '--wordlist', dest='word_list', action=StoreReadableFilePath, required=True,
                                      metavar='PATH', help=self._word_list_help)
@@ -114,8 +114,7 @@ class ArgumentManager:
         request_group.add_argument('--user-agent', dest='user_agent', action='store', metavar='USER AGENT',
                                    help=self._user_agent_help)
         request_group.add_argument('-c', '--cookie', dest='cookie', action='store')
-
-        request_group.add_argument('-H', '--header', default={}, dest='headers', action=StoreDict,
+        request_group.add_argument('-H', '--header', default={}, dest='headers', action=StoreDict, metavar='HEADER',
                                    help=self._header_help)
         request_group.add_argument('--allow-redirect', dest='allow_redirect', action='store_true',
                                    help=self._allow_redirect_help)

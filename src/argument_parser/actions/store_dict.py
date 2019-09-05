@@ -9,7 +9,7 @@ class StoreDict(argparse.Action):
 
     def __call__(self, parser, namespace, values, option_string=None):
         try:
-            name, value = values.split(self._separator)
+            name, value = (value.strip() for value in values.split(self._separator))
             getattr(namespace, self.dest).update({name: value})
         except ValueError:
             raise ArgumentManagerError(self._message_format % (values,))
