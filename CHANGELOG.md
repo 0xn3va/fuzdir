@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.1
+
+### Added
+
+- Plain and JSON reporting
+- Unit tests
+- License
+- Logging
+- Range of codes for code condition
+- Custom actions for argument parser
+- Usage guide with examples
+
+### Changed
+
+- Project name
+- Exception handling
+
+### Fixed
+
+- The extreme case for confidence interval, when the left border is negative
+- Incorrect calculating a time of last call
+- Range checking in conditions
+- Conditions matching
+
 ## 0.1beta1
 
 ### Added
