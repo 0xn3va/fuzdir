@@ -1,14 +1,7 @@
 #!/usr/bin/env python3
+import sys
 
-import os
-
-from src.core.controller import Controller
-
-
-def fuzdir():
-    controller = Controller(root_path=os.path.abspath(os.path.dirname(__file__)))
-    controller.start()
-
+from cli import main
 
 if __name__ == '__main__':
-    fuzdir()
+    sys.exit(main())

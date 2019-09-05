@@ -3,7 +3,6 @@ import unittest
 from src.filter.condition.implement.content_length_condition import ContentLengthCondition
 from src.filter.filter_error import FilterError
 from src.network.requester.requester import Requester
-
 from test import ignore_resource_warning
 from test.mocks.httpserver.http_request_handler import HTTPRequestHandler
 from test.mocks.httpserver.http_server_manager import HTTPServerManager

@@ -1,4 +1,4 @@
 # Ignore everything in this directory
-*
+log-19-09-05_13-20-45.txt
 # Except this file
 !.gitignore
