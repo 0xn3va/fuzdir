@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1
+## 1.0.0
 
 ### Added
 
@@ -11,6 +11,7 @@
 - Range of codes for code condition
 - Custom actions for argument parser
 - Usage guide with examples
+- Installing with pip
 
 ### Changed
 
