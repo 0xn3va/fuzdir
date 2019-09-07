@@ -1,9 +1,9 @@
 import random
 import unittest
 
-from fuzdir.src.network.requester import ConfidenceInterval
-from fuzdir.test.mocks.elapsed.elapsed_mock import ElapsedMock
-from fuzdir.test.mocks.elapsed.elapsed_mock_modes import ElapsedMockModes
+from src.network.requester.throttle.confidence_interval import ConfidenceInterval
+from test.mocks.elapsed.elapsed_mock import ElapsedMock
+from test.mocks.elapsed.elapsed_mock_modes import ElapsedMockModes
 
 
 class ConfidenceIntervalTest(unittest.TestCase):

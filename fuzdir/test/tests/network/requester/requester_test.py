@@ -135,12 +135,13 @@ class RequesterTest(unittest.TestCase):
             self.assertTrue(is_changed, msg='Check for increasing delay failed')
             # decreasing
             is_changed = False
-            for _ in range(self._changeable_iterations):
+            for i in range(self._changeable_iterations):
                 _ = requester.request(random_string())
                 p = requester._throttle._interval._period
                 if p != period:
+                    if is_changed:
+                        self.assertGreater(period, p, msg='Check for decreasing delay failed')
                     is_changed = True
-                    self.assertGreater(period, p, msg='Check for decreasing delay failed')
                     period = p
             self.assertTrue(is_changed, msg='Check for decreasing delay failed')
             # stable
