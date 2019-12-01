@@ -10,7 +10,7 @@ Run the following commands to manually install:
 ```bash
 $ git clone https://github.com/n3v4/fuzdir.git fuzdir
 $ cd fuzdir
-$ pip3 install -r requirements.txt
+$ python3 setup.py install
 ```
 
 ## Usage
