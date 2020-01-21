@@ -16,15 +16,23 @@ disable_warnings(InsecureRequestWarning)
 class Requester:
     default_timeout = 5
     default_retries = 3
+    default_status_list = frozenset([502, 503, 504])
     _min_retries = 0
     _max_retries = 5
 
     _back_off_factor = 0.3
-    _status_force_list = {502, 503, 504}
 
-    def __init__(self, url: str, user_agent: str = None, cookie: str = None, headers: dict = None,
-                 allow_redirect: bool = False, timeout: int = default_timeout, retries: int = default_retries,
-                 throttling_period: float = None, proxy: str = None):
+    def __init__(self, url: str,
+                 user_agent: str = None,
+                 cookie: str = None,
+                 headers: dict = None,
+                 allow_redirect: bool = False,
+                 timeout: int = default_timeout,
+                 retries: int = default_retries,
+                 status_forcelist: set = default_status_list,
+                 raise_on_status: bool = True,
+                 throttling_period: float = None,
+                 proxy: str = None):
         parsed_url = parse_url(url)
         scheme = parsed_url.scheme or Schemes.default
         if scheme not in Schemes.allowable:
@@ -58,7 +66,7 @@ class Requester:
         self._session = requests.Session()
         adapter = HTTPAdapter(
             max_retries=Retry(total=retries, read=retries, connect=retries, backoff_factor=self._back_off_factor,
-                              status_forcelist=self._status_force_list))
+                              status_forcelist=status_forcelist, raise_on_status=raise_on_status))
         for s in Schemes.allowable:
             self._session.mount('%s://' % (s,), adapter)
         self._throttle = Throttle(period=throttling_period)

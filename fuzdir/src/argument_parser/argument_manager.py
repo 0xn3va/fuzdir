@@ -13,12 +13,16 @@ from src.output.report.report_type import ReportType
 
 class ArgumentManager:
     _url_help = 'target URL'
-    _word_list_help = 'path to word list'
+    _words_help = 'a comma-separated list of words'
+    _words_file_help = 'path to word list'
     _extensions_help = 'extension list separated by comma'
     _extensions_file_help = 'path to file with extensions'
     _threads_help_format = 'the maximum number of threads that can be used to requests, by default %d threads'
     _timeout_help_format = 'connection timeout, by default %ds.'
     _retry_help_format = 'number of attempts to connect to the server, by default %d times'
+    _retry_status_list_help_format = 'a comma-separated list of HTTP status codes for which should be retry on, ' \
+                                     'by default %s'
+    _ignore_retry_fail_help = 'ignore failed attempts to connect to server and continue fuzzing'
     _throttling_help = 'delay time in seconds (float) between requests sending'
     _proxy_help = 'HTTP or SOCKS5 proxy\n' \
                   + 'usage format:\n' \
@@ -43,9 +47,10 @@ class ArgumentManager:
                        + '  grep=\'regex\'\t\tmatch responses with \'regex\' in headers or body\n' \
                        + '  grep:body=\'regex\'\tmatch responses with \'regex\' in body\n'
     _examples = 'examples:\n' \
-                + '  fuzdir -u https://example.com -w wordlist.txt\n' \
-                + '  fuzdir -u https://example.com -w wordlist.txt -e html,js,php -x code=200\n' \
-                + '  fuzdir -u https://example.com -w wordlist.txt -x code=200;ignore:grep:headers=\'Auth\''
+                + '  fuzdir -u https://example.com -W wordlist.txt\n' \
+                + '  fuzdir -u https://example.com -w index,robots -e html,txt\n' \
+                + '  fuzdir -u https://example.com -W wordlist.txt -e html,js,php -x code=200\n' \
+                + '  fuzdir -u https://example.com -W wordlist.txt -x code=200;ignore:grep:headers=\'Auth\''
 
     def __init__(self):
         parser = self._create_parser()
@@ -53,7 +58,8 @@ class ArgumentManager:
             args = parser.parse_args()
             # necessary arguments
             self.url = args.url
-            self.word_list = args.word_list
+            self.words = args.words
+            self.words_file = args.words_file
             # extensions arguments
             self.extensions = args.extensions
             self.extensions_file = args.extensions_file
@@ -61,6 +67,8 @@ class ArgumentManager:
             self.threads = args.threads
             self.timeout = args.timeout
             self.retry = args.retry
+            self.retry_status_list = set(args.retry_status_list)
+            self.raise_on_status = args.raise_on_status
             self.throttling_period = args.throttling_period
             self.proxy = args.proxy
             # request arguments
@@ -90,14 +98,17 @@ class ArgumentManager:
         # necessary group
         necessary_group = parser.add_argument_group('necessary arguments')
         necessary_group.add_argument('-u', '--url', dest='url', action='store', required=True, help=self._url_help)
-        necessary_group.add_argument('-w', '--wordlist', dest='word_list', action=StoreReadableFilePath, required=True,
-                                     metavar='PATH', help=self._word_list_help)
+        necessary_group = necessary_group.add_mutually_exclusive_group(required=True)
+        necessary_group.add_argument('-w', '--wordlist', default=[], dest='words', action=StoreList, metavar='WORDS',
+                                     help=self._words_help)
+        necessary_group.add_argument('-W', '--wordlist-path', dest='words_file', action=StoreReadableFilePath,
+                                     metavar='PATH', help=self._words_file_help)
         # extensions group
-        wordlist_group = parser.add_argument_group('extensions settings')
-        wordlist_group.add_argument('-e', '--extensions', default=[], dest='extensions', action=StoreList,
-                                    help=self._extensions_help)
-        wordlist_group.add_argument('-E', '--extensions-file', dest='extensions_file', action=StoreReadableFilePath,
-                                    metavar='PATH', help=self._extensions_file_help)
+        extension_group = parser.add_argument_group('extensions settings')
+        extension_group.add_argument('-e', '--extensions', default=[], dest='extensions', action=StoreList,
+                                     help=self._extensions_help)
+        extension_group.add_argument('-E', '--extensions-file', dest='extensions_file', action=StoreReadableFilePath,
+                                     metavar='PATH', help=self._extensions_file_help)
         # connection group
         connection_group = parser.add_argument_group('connection settings')
         connection_group.add_argument('-t', '--threads', type=int, default=Fuzzer.default_threads, dest='threads',
@@ -106,6 +117,12 @@ class ArgumentManager:
                                       action='store', help=self._timeout_help_format % (Requester.default_timeout,))
         connection_group.add_argument('--retry', type=int, default=Requester.default_retries, dest='retry',
                                       action='store', help=self._retry_help_format % (Requester.default_retries,))
+        retry_status_list = ', '.join([str(s) for s in Requester.default_status_list])
+        connection_group.add_argument('--retry-status-list', default=Requester.default_status_list,
+                                      dest='retry_status_list', action=StoreList, metavar='STATUS_LIST',
+                                      help=self._retry_status_list_help_format % (retry_status_list,))
+        connection_group.add_argument('--ignore-retry-fail', dest='raise_on_status', action='store_false',
+                                      help=self._ignore_retry_fail_help)
         connection_group.add_argument('--throttling', type=float, dest='throttling_period', action='store',
                                       metavar='SECONDS', help=self._throttling_help)
         connection_group.add_argument('--proxy', dest='proxy', action='store', metavar='URL', help=self._proxy_help)

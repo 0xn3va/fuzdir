@@ -67,6 +67,8 @@ class Fuzzer:
             self._cancel('SSL error connection to server')
         except requests.exceptions.ConnectionError:
             self._cancel('Failed to establish a connection with %s' % (self._requester.url,))
+        except requests.exceptions.RetryError as e:
+            self._cancel('Max retries exceeded with url: %s' % (e.request.path_url,))
         except Exception as e:
             self._cancel(str(e))
 

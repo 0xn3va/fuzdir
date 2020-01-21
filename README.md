@@ -16,14 +16,15 @@ $ python3 setup.py install
 ## Usage
 You can start the process of fuzzing files and directories with the following command:
 ```bash
-$ fuzdir.py -u <url> -w <wordlist>
+$ fuzdir.py -u <url> -W <wordlist>
 ```
 Help message:
 ```bash
-usage: fuzdir [-h] -u URL -w PATH [-e EXTENSIONS] [-E PATH] [-t THREADS]
-              [--timeout TIMEOUT] [--retry RETRY] [--throttling SECONDS]
-              [--proxy URL] [--user-agent USER AGENT] [-c COOKIE] [-H HEADER]
-              [--allow-redirect] [-v]
+usage: fuzdir [-h] -u URL (-w WORDS | -W PATH) [-e EXTENSIONS] [-E PATH]
+              [-t THREADS] [--timeout TIMEOUT] [--retry RETRY]
+              [--retry-status-list STATUS_LIST] [--ignore-retry-fail]
+              [--throttling SECONDS] [--proxy URL] [--user-agent USER AGENT]
+              [-c COOKIE] [-H HEADER] [--allow-redirect] [-v]
               [--plain-report PATH | --json-report PATH] [-x CONDITIONS]
 
 optional arguments:
@@ -31,7 +32,9 @@ optional arguments:
 
 necessary arguments:
   -u URL, --url URL     target URL
-  -w PATH, --wordlist PATH
+  -w WORDS, --wordlist WORDS
+                        a comma-separated list of words
+  -W PATH, --wordlist-path PATH
                         path to word list
 
 extensions settings:
@@ -45,6 +48,9 @@ connection settings:
                         the maximum number of threads that can be used to requests, by default 10 threads
   --timeout TIMEOUT     connection timeout, by default 5s.
   --retry RETRY         number of attempts to connect to the server, by default 3 times
+  --retry-status-list STATUS_LIST
+                        a comma-separated list of HTTP status codes for which should be retry on, by default 504, 502, 503
+  --ignore-retry-fail   ignore failed attempts to connect to server and continue fuzzing
   --throttling SECONDS  delay time in seconds (float) between requests sending
   --proxy URL           HTTP or SOCKS5 proxy
                         usage format:
@@ -112,6 +118,15 @@ Platform: web
 Token: reWfBt1fnbgjEhA6wfs+Uw==
 ...
 ```
+
+### Retry settings
+You can specify a list of HTTP status codes with `--retry-status-list`, for which fuzdir should resend the request to
+ the server, the default value is 502, 503, 504.
+
+The number of attempts can be adjusted using `--retry` from 0 to 5 inclusive, by default 3 attempts.
+
+By default, if all attempts were fail, fuzzing will be interrupted and the program will exit. To avoid this, you can use
+ `--ignore-retry-fail`.
 
 ### Conditions
 Conditions is a system for filtering HTTP responses during fuzzing. 
