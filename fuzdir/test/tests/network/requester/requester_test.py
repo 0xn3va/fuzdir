@@ -56,6 +56,11 @@ class RequesterTest(unittest.TestCase):
             with self.assertRaises(requests.exceptions.RetryError,  msg='Check a max retries exceeded failed'):
                 _ = Requester(url=server.url).request(random_string())
 
+            try:
+                _ = Requester(url=server.url, raise_on_status=False).request(random_string())
+            except requests.exceptions.RetryError:
+                self.fail(msg='Check an ignoring fail of retry requests')
+
     @ignore_resource_warning
     def test_proxy(self):
         class Handler(HTTPRequestHandler):

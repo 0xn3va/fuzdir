@@ -15,8 +15,8 @@ from src.filter.filter_error import FilterError
 from src.network.requester.requester_error import RequesterError
 from src.network.requester.requester import Requester
 
-MAJOR_VERSION = 0
-MINOR_VERSION = 1
+MAJOR_VERSION = 1
+MINOR_VERSION = 0
 REVISION = '.1'
 VERSION = {
     "MAJOR_VERSION": MAJOR_VERSION,
@@ -48,14 +48,22 @@ class Controller:
             log_path = self._logging_setup(root_path, argument_manager.verbose)
             output.config(report_type=argument_manager.report_type, filename=argument_manager.report_path)
             # setting main components
-            dictionary = Dictionary(word_list=WordList(path=argument_manager.word_list),
+            dictionary = Dictionary(word_list=WordList(words=argument_manager.words, path=argument_manager.words_file),
                                     extension_list=ExtensionList(extensions=argument_manager.extensions,
                                                                  path=argument_manager.extensions_file))
-            requester = Requester(url=argument_manager.url, user_agent=argument_manager.user_agent,
-                                  cookie=argument_manager.cookie, headers=argument_manager.headers,
-                                  allow_redirect=argument_manager.allow_redirect, timeout=argument_manager.timeout,
-                                  retries=argument_manager.retry, throttling_period=argument_manager.throttling_period,
+
+            requester = Requester(url=argument_manager.url,
+                                  user_agent=argument_manager.user_agent,
+                                  cookie=argument_manager.cookie,
+                                  headers=argument_manager.headers,
+                                  allow_redirect=argument_manager.allow_redirect,
+                                  timeout=argument_manager.timeout,
+                                  retries=argument_manager.retry,
+                                  status_forcelist=argument_manager.retry_status_list,
+                                  raise_on_status=argument_manager.raise_on_status,
+                                  throttling_period=argument_manager.throttling_period,
                                   proxy=argument_manager.proxy)
+
             filter = Filter(conditions=argument_manager.conditions)
             self._fuzzer = Fuzzer(dictionary=dictionary, requester=requester, filter=filter,
                                   threads=argument_manager.threads)
