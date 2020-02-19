@@ -31,9 +31,7 @@ class Controller:
     _logging_format = '%(asctime)s %(pathname)s, line:%(lineno)d - %(levelname)s - %(message)s'
     _logs_dirname = 'logs'
     _logs_capacity = 32
-    _log_name_format = '%s-%s.%s'
     _log_name_prefix = 'log'
-    _log_extension = 'txt'
 
     def __init__(self, root_path: str):
         try:
@@ -86,8 +84,7 @@ class Controller:
         for log_name in logs[:max(0, len(logs) - self._logs_capacity)]:
             os.remove(os.path.join(logs_path, log_name))
         # log file settings
-        log_path = os.path.join(logs_path, self._log_name_format %
-                                (self._log_name_prefix, time.strftime('%y-%m-%d_%H-%M-%S'), self._log_extension,))
+        log_path = os.path.join(logs_path, f'{self._log_name_prefix}-{time.strftime("%y-%m-%d_%H-%M-%S")}.txt')
         if not FileUtils.is_writable(log_path):
             raise IOError('The log file should be writable')
         # logging settings
