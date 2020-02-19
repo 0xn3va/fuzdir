@@ -1,5 +1,4 @@
 import random
-import threading
 import time
 import unittest
 
@@ -101,7 +100,6 @@ class RequesterTest(unittest.TestCase):
     def test_throttle_dynamic(self):
         class Handler(HTTPRequestHandler, metaclass=Singleton):
             delta = 0.001
-            lock = threading.Lock()
             delay = 0.
             fixed_iterations = self._stable_iterations
             increasing_iterations = fixed_iterations + self._changeable_iterations
@@ -110,15 +108,14 @@ class RequesterTest(unittest.TestCase):
 
             def do_GET(self):
                 self._set_headers(status_code=200, headers={'Content-Type': 'text/html', 'Content-Length': 0})
-                with self.lock:
-                    if self.fixed_iterations <= self.i < self.increasing_iterations:
-                        self.delay += self.delta
-                    elif self.increasing_iterations <= self.i < self.decreasing_iterations:
-                        self.delay -= self.delta
-                        if self.delay < 0:
-                            self.delay = 0.
-                    self.i += 1
-                    time.sleep(self.delay)
+                if self.fixed_iterations <= self.i < self.increasing_iterations:
+                    self.delay += self.delta
+                elif self.increasing_iterations <= self.i < self.decreasing_iterations:
+                    self.delay -= self.delta
+                    if self.delay < 0:
+                        self.delay = 0.
+                self.i += 1
+                time.sleep(self.delay)
 
         with HTTPServerManager(handler=Handler, port=random_port()) as server:
             requester = Requester(url=server.url)
