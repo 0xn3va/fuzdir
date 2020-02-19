@@ -1,4 +1,4 @@
-import logging
+from logging import debug
 from math import sqrt
 
 from src.network.requester.throttle.action import Action
@@ -7,7 +7,7 @@ from src.network.requester.throttle.action import Action
 class ConfidenceInterval:
     _window_size = 63
     _threshold = int(_window_size * 0.5)
-    _min_mean = 0.05
+    _min_mean = 0.03
 
     def __init__(self, period: float = None):
         self._fixed_period = period is not None
@@ -56,9 +56,10 @@ class ConfidenceInterval:
     def _statistics_update(self, elapsed):
         # Welford's algorithm
         self._count += 1
+        count_reverse = 1 / self._count
         delta = elapsed - self._mean
-        self._mean += delta / self._count
-        self._variance += (delta * (elapsed - self._mean) - self._variance) / self._count
+        self._mean += delta * count_reverse
+        self._variance += (delta * (elapsed - self._mean) - self._variance) * count_reverse
 
     def _statistics_reset(self):
         self._count = 0
@@ -69,7 +70,7 @@ class ConfidenceInterval:
         self._period = period
         left, right = self._three_sigma_borders()
         self._borders = (left, right)
-        logging.debug('Changed period: %.4f, borders: [%.4f, %.4f]' % (self._period, left, right,))
+        debug(f'Changed period: {self._period:.4f}, borders: [{left:.4f}, {right:.4f}]')
 
     def _three_sigma_borders(self):
         window = 3 * sqrt(self._variance)

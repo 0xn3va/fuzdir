@@ -21,12 +21,13 @@ class ContentLengthCondition(Condition):
                 if len(lengths) > 1:
                     lower, upper = lengths
                     if upper < lower:
-                        raise FilterError('Invalid content length range %s' % (args,))
+                        raise FilterError(f'Invalid content length range {args}')
                     self._ranges.append((lower, upper))
                 else:
                     self._ranges.append((lengths[0], lengths[0]))
         except ValueError:
-            raise FilterError('Incorrect content length %s' % (args,))
+            raise FilterError(f'Incorrect content length {args}')
 
     def match(self, response: Response):
-        return any(lower <= NetworkUtils.content_length(response) <= upper for lower, upper in self._ranges)
+        content_length = NetworkUtils.content_length(response)
+        return any(lower <= content_length <= upper for lower, upper in self._ranges)

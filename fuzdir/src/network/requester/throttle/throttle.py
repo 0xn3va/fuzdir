@@ -1,6 +1,6 @@
 import threading
-import time
 from functools import wraps
+from time import time, sleep
 
 from src.network.requester.throttle.confidence_interval import ConfidenceInterval
 
@@ -14,9 +14,9 @@ class Throttle:
     def __call__(self, request):
         @wraps(request)
         def wrap(*args, **kwargs):
-            t = time.time()
+            t = time()
             response = request(*args, **kwargs)
-            self._throttle(time.time() - t)
+            self._throttle(time() - t)
             return response
         return wrap
 
@@ -26,14 +26,14 @@ class Throttle:
             self._delay(period)
 
     def _delay(self, period):
-        current_time = time.time()
+        current_time = time()
         if self._time_of_last_call is None:
             self._time_of_last_call = current_time
         else:
             time_since_last_call = current_time - self._time_of_last_call
             if time_since_last_call < period:
                 delta = period - time_since_last_call
-                time.sleep(delta)
-                self._time_of_last_call = time.time()
+                sleep(delta)
+                self._time_of_last_call = time()
             else:
                 self._time_of_last_call = current_time

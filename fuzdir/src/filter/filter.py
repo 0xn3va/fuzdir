@@ -25,7 +25,7 @@ class Filter:
         for condition in conditions.strip(self._conditions_separator).split(self._conditions_separator):
             head, _, args = condition.partition(self._args_separator)
             if not args:
-                raise FilterError('Invalid condition: %s' % (condition,))
+                raise FilterError(f'Invalid condition: {condition}')
 
             key, _, tail = head.partition(self._handler_separator)
             ignore = (key == self._ignore_key)
@@ -39,13 +39,15 @@ class Filter:
                 handler.setup(args, area)
                 self._conditions.append((ignore, handler))
             except KeyError:
-                raise FilterError('Invalid condition name: %s' % (name,))
+                raise FilterError(f'Invalid condition name: {name}')
 
         self._conditions.sort(key=lambda c: c[-1].priority.value, reverse=True)
 
     def inspect(self, response: Response) -> bool:
-        if response is None:
-            return False
         if not self._conditions:
             return True
+
+        if response is None:
+            return False
+
         return all(ignore ^ condition.match(response) for ignore, condition in self._conditions)

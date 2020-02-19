@@ -2,10 +2,10 @@ from src.dictionary.utils.file_reader import FileReader
 
 
 class WordList:
-    def __init__(self, words: list, path: str = None):
+    def __init__(self, words: list, path: str):
         self._words = words
         self._path = path
-        self._length = len(self._words) + sum(1 for _ in FileReader.read(self._path))
+        self._length = len(words) + FileReader.lines_count(path=path)
 
     def __len__(self):
         return self._length
@@ -14,4 +14,4 @@ class WordList:
         for word in self._words:
             yield word
 
-        yield from FileReader.read(self._path)
+        yield from FileReader.read(path=self._path)

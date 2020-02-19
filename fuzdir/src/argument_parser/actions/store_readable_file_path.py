@@ -8,5 +8,5 @@ class StoreReadableFilePath(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         if values is not None:
             if not FileUtils.is_readable(values):
-                raise ArgumentManagerError('The file %s does not exist or access denied' % (values,))
+                raise ArgumentManagerError(f'The file {values} does not exist or access denied')
             setattr(namespace, self.dest, values)

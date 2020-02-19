@@ -23,7 +23,7 @@ Help message:
 usage: fuzdir [-h] -u URL (-w WORDS | -W PATH) [-e EXTENSIONS] [-E PATH]
               [-t THREADS] [--timeout TIMEOUT] [--retry RETRY]
               [--retry-status-list STATUS_LIST] [--ignore-retry-fail]
-              [--throttling SECONDS] [--proxy URL] [--user-agent USER AGENT]
+              [--throttling [SECONDS]] [--proxy URL] [--user-agent USER AGENT]
               [-c COOKIE] [-H HEADER] [--allow-redirect] [-v]
               [--plain-report PATH | --json-report PATH] [-x CONDITIONS]
 
@@ -51,7 +51,8 @@ connection settings:
   --retry-status-list STATUS_LIST
                         a comma-separated list of HTTP status codes for which should be retry on, by default 504, 502, 503
   --ignore-retry-fail   ignore failed attempts to connect to server and continue fuzzing
-  --throttling SECONDS  delay time in seconds (float) between requests sending
+  --throttling [SECONDS]
+                        delay time in seconds (float) between requests sending, if the throttling value is not specified, it will automatically adjust during fuzzing
   --proxy URL           HTTP or SOCKS5 proxy
                         usage format:
                           [http|socks5]://user:pass@host:port
@@ -85,6 +86,12 @@ filter:
                           length=0-1337,7331	match responses with content length between 0 and 1337 or equals 7331
                           grep='regex'		    match responses with 'regex' in headers or body
                           grep:body='regex'	    match responses with 'regex' in body
+
+examples:
+  fuzdir -u https://example.com -W wordlist.txt
+  fuzdir -u https://example.com -w index,robots -e html,txt
+  fuzdir -u https://example.com -W wordlist.txt -e html,js,php -x code=200
+  fuzdir -u https://example.com -W wordlist.txt -x code=200;ignore:grep:headers='Auth'
 ```
 
 ### Extensions
@@ -102,10 +109,10 @@ Throttling allows you to adjust the frequency of sending packets to the server. 
  number of seconds that must elapse before sending the next packet to the server. For example, if the argument
  `--throttling 2.5` is passed to fuzdir, then 1 packet will be sent to the server every 2.5 seconds.
 
-By default, when throttling isn't set, fuzdir adjusts the throttling value during fuzzing, tracking the response time
+When throttling value isn't specified, fuzdir adjusts the throttling value during fuzzing, tracking the response time
  from the server.
 
-Throttling can be completely disabled through `--throttling 0`. 
+By default, throttling completely disabled, similar `--throttling 0`. 
 
 ### Custom header(s)
 You can pass one or more custom headers with `-H` or `--header`. For example, if you pass `-H Platform:web` and
