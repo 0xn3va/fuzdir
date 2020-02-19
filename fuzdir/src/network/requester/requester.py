@@ -36,14 +36,14 @@ class Requester:
         parsed_url = parse_url(url)
         scheme = parsed_url.scheme or Schemes.default
         if scheme not in Schemes.allowable:
-            raise RequesterError('Invalid scheme: %s' % (scheme,))
+            raise RequesterError(f'Invalid scheme: {scheme}')
         host = parsed_url.host
         if host is None:
-            raise RequesterError('Invalid url: %s' % (url,))
+            raise RequesterError(f'Invalid url: {url}')
         port = parsed_url.port or Schemes.ports[scheme]
         path = parsed_url.path or '/'
         if not path.endswith('/'):
-            path = '%s/' % (path,)
+            path = f'{path}/'
         url = Url(scheme=scheme, auth=parsed_url.auth, host=host, port=port if port != Schemes.ports[scheme] else None,
                   path=path, query=parsed_url.query, fragment=parsed_url.fragment)
         self._url = url.url
@@ -52,7 +52,7 @@ class Requester:
         self._headers = dict([
             (HeaderNames.accept_lang, 'en-us'),
             (HeaderNames.cache_control, 'max-age=0'),
-            (HeaderNames.host, '%s:%d' % (host, port,) if port != Schemes.ports[scheme] else host)
+            (HeaderNames.host, f'{host}:{port}' if port != Schemes.ports[scheme] else host)
         ])
         if cookie is not None:
             self._headers[HeaderNames.cookie] = cookie
@@ -61,14 +61,13 @@ class Requester:
         self._allow_redirect = allow_redirect
         self._timeout = timeout
         if retries < self._min_retries or retries > self._max_retries:
-            raise RequesterError('Invalid value of retries: %d, allowable values from %d to %d inclusive'
-                                 % (retries, self._min_retries, self._max_retries))
+            raise RequesterError(f'Invalid value of retries: {retries}, allowable values from {self._min_retries} to {self._max_retries} inclusive')
         self._session = requests.Session()
         adapter = HTTPAdapter(
             max_retries=Retry(total=retries, read=retries, connect=retries, backoff_factor=self._back_off_factor,
                               status_forcelist=status_forcelist, raise_on_status=raise_on_status))
         for s in Schemes.allowable:
-            self._session.mount('%s://' % (s,), adapter)
+            self._session.mount(f'{s}://', adapter)
         self._throttle = Throttle(period=throttling_period)
         self._proxies = None if proxy is None else {scheme: proxy}
 
@@ -89,7 +88,7 @@ class Requester:
         headers = dict(self._headers)
         headers[HeaderNames.user_agent] = self._user_agent or NetworkUtils.random_ua()
         return self._session.request(method=method,
-                                     url=self._url + path,
+                                     url=f'{self._url}{path}',
                                      headers=headers,
                                      timeout=self._timeout,
                                      allow_redirects=self._allow_redirect,

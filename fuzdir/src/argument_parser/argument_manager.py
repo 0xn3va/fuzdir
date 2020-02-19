@@ -1,6 +1,7 @@
 import argparse
 
 from src import output
+from src.argument_parser.actions.store_natural_number import StoreNaturalNumber
 from src.argument_parser.actions.store_readable_file_path import StoreReadableFilePath
 from src.argument_parser.actions.store_writable_file_path import StoreWritableFilePath
 from src.argument_parser.argument_manager_error import ArgumentManagerError
@@ -23,7 +24,8 @@ class ArgumentManager:
     _retry_status_list_help_format = 'a comma-separated list of HTTP status codes for which should be retry on, ' \
                                      'by default %s'
     _ignore_retry_fail_help = 'ignore failed attempts to connect to server and continue fuzzing'
-    _throttling_help = 'delay time in seconds (float) between requests sending'
+    _throttling_help = 'delay time in seconds (float) between requests sending, ' \
+                       'if the throttling value is not specified, it will automatically adjust during fuzzing'
     _proxy_help = 'HTTP or SOCKS5 proxy\n' \
                   + 'usage format:\n' \
                   + '  [http|socks5]://user:pass@host:port\n'
@@ -111,8 +113,8 @@ class ArgumentManager:
                                      metavar='PATH', help=self._extensions_file_help)
         # connection group
         connection_group = parser.add_argument_group('connection settings')
-        connection_group.add_argument('-t', '--threads', type=int, default=Fuzzer.default_threads, dest='threads',
-                                      action='store', help=self._threads_help_format % (Fuzzer.default_threads,))
+        connection_group.add_argument('-t', '--threads', default=Fuzzer.default_threads, dest='threads',
+                                      action=StoreNaturalNumber, help=self._threads_help_format % (Fuzzer.default_threads,))
         connection_group.add_argument('--timeout', type=int, default=Requester.default_timeout, dest='timeout',
                                       action='store', help=self._timeout_help_format % (Requester.default_timeout,))
         connection_group.add_argument('--retry', type=int, default=Requester.default_retries, dest='retry',
@@ -123,8 +125,8 @@ class ArgumentManager:
                                       help=self._retry_status_list_help_format % (retry_status_list,))
         connection_group.add_argument('--ignore-retry-fail', dest='raise_on_status', action='store_false',
                                       help=self._ignore_retry_fail_help)
-        connection_group.add_argument('--throttling', type=float, dest='throttling_period', action='store',
-                                      metavar='SECONDS', help=self._throttling_help)
+        connection_group.add_argument('--throttling', default=0, type=float, dest='throttling_period', action='store',
+                                      metavar='SECONDS', nargs='?', const=None, help=self._throttling_help)
         connection_group.add_argument('--proxy', dest='proxy', action='store', metavar='URL', help=self._proxy_help)
         # request group
         request_group = parser.add_argument_group('request settings')
