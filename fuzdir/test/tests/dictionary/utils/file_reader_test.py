@@ -29,4 +29,4 @@ class FileReaderTest(unittest.TestCase):
             lines = [line for line in FileReader.read(file.name)]
             self.assertCountEqual(lines, data, msg='Check on read from file failed')
 
-        self.assertFalse([word for word in FileReader.read()], msg='Check on read when path is None')
+        self.assertFalse([word for word in FileReader.read(path=None)], msg='Check on read when path is None')
