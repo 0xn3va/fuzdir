@@ -8,5 +8,5 @@ class StoreWritableFilePath(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         if values is not None:
             if not FileUtils.is_writable(values):
-                raise ArgumentManagerError('The file %s does not writable' % (values,))
+                raise ArgumentManagerError(f'The file {values} does not writable')
             setattr(namespace, self.dest, values)
