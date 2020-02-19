@@ -17,8 +17,8 @@ class ReportManager:
         self._report = None
 
     def config(self, report_type: ReportType, filename: str):
-        with self._lock:
-            if report_type is not None:
+        if report_type is not None:
+            with self._lock:
                 if self._report is not None:
                     logging.warning('Shutdown is\'t called before reconfiguration')
                 self._report = self._handlers[report_type](filename)
