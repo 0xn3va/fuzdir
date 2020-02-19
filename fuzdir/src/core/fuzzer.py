@@ -1,9 +1,10 @@
 import logging
 import threading
+from queue import Empty
 
 import requests
 
-from src import output
+from src.output import progress_bar as print_progress_bar, error as print_error, response as print_response
 from src.dictionary.dictionary import Dictionary
 from src.filter.filter import Filter
 from src.network.requester.requester import Requester
@@ -28,7 +29,6 @@ class Fuzzer:
         threads = set()
         try:
             self._is_cancel = False
-            self._paths = iter(self._dictionary)
             self._index = 0
 
             for _ in range(self.threads):
@@ -50,25 +50,32 @@ class Fuzzer:
 
     def _request(self):
         try:
+            dictionary = self._dictionary
+            request = self._requester.request
+            canceled = self._canceled
+            inspect = self._filter.inspect
+            index_increment = self._index_increment
+            delta = 1 / self._dictionary_len * 100
+
             while True:
                 try:
-                    path = next(self._paths)
-                    response = self._requester.request(path=path)
-                    if self._canceled():
+                    sample = dictionary.get()
+                    response = request(path=sample)
+                    if canceled():
                         break
-                    if self._filter.inspect(response):
-                        output.response(response)
-                    output.progress_bar(self._index_increment() / self._dictionary_len * 100)
-                except StopIteration:
+                    if inspect(response):
+                        print_response(response)
+                    print_progress_bar(index_increment() * delta)
+                except Empty:
                     break
         except requests.exceptions.TooManyRedirects as e:
-            self._cancel('Too many redirects: %s' % (str(e),))
+            self._cancel(f'Too many redirects: {str(e)}')
         except requests.exceptions.SSLError:
             self._cancel('SSL error connection to server')
         except requests.exceptions.ConnectionError:
-            self._cancel('Failed to establish a connection with %s' % (self._requester.url,))
+            self._cancel(f'Failed to establish a connection with {self._requester.url}')
         except requests.exceptions.RetryError as e:
-            self._cancel('Max retries exceeded with url: %s' % (e.request.path_url,))
+            self._cancel(f'Max retries exceeded with url: {e.request.path_url}')
         except Exception as e:
             self._cancel(str(e))
 
@@ -79,11 +86,13 @@ class Fuzzer:
     def _cancel(self, e: str):
         with self._is_cancel_lock:
             if not self._is_cancel:
-                logging.debug('Fuzzing failed, an error has occurred: %s' % (e,))
+                logging.debug(f'Fuzzing failed, an error has occurred: {e}')
+                print_error(e)
                 self._is_cancel = True
-                output.error(e)
+                self._dictionary.cancel()
 
     def _index_increment(self):
         with self._index_lock:
-            self._index += 1
-            return self._index
+            index = self._index + 1
+            self._index = index
+            return index
