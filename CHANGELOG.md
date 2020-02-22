@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.0.1
+
+### Added
+
+- Passing a word list for fuzzing
+- Parameter management for retry requests
+
+### Changed
+
+- String formatting
+- Throttling default behaviour
+- Dictionary implementation
+
+### Fixed
+
+- Multiple bugs
+
 ## 1.0.0
 
 ### Added
