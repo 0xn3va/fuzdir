@@ -1,6 +1,6 @@
 import logging
-import os
 import time
+from pathlib import Path
 
 from src import output
 from src.argument_parser.argument_manager import ArgumentManager
@@ -30,13 +30,14 @@ class Controller:
     # logging settings
     _logging_format = '%(asctime)s %(pathname)s, line:%(lineno)d - %(levelname)s - %(message)s'
     _logs_dirname = 'logs'
+    _logs_mode = 0o755
     _logs_capacity = 32
     _log_name_prefix = 'log'
 
     def __init__(self, root_path: str):
         try:
             # print banner
-            with open(os.path.join(root_path, self._banner_filename), 'r') as banner_file:
+            with open(Path(root_path).joinpath(self._banner_filename), 'r') as banner_file:
                 banner = banner_file.read()
             banner = banner.format(**VERSION)
             output.banner(banner=banner)
@@ -68,23 +69,21 @@ class Controller:
             # print summary
             output.summary(log_path=log_path, threads=self._fuzzer.threads, dictionary_size=len(dictionary),
                            target=requester.url)
-        except (IOError, EncodingError, RequesterError, FilterError) as e:
+        except (IOError, PermissionError, EncodingError, RequesterError, FilterError) as e:
             output.error(str(e))
             exit(0)
 
     def _logging_setup(self, root_path: str, verbose: bool):
-        # logs folder settings
-        logs_path = os.path.join(root_path, self._logs_dirname)
-        if not os.path.isdir(logs_path):
-            raise IOError('The logs directory is missing')
+        # create logs folder
+        path = Path(root_path).joinpath(self._logs_dirname)
+        path.mkdir(mode=self._logs_mode, exist_ok=True)
         # remove old logs
-        logs = [name for name in os.listdir(logs_path)
-                if name.startswith(self._log_name_prefix) and os.path.isfile(os.path.join(logs_path, name))]
-        logs.sort()
-        for log_name in logs[:max(0, len(logs) - self._logs_capacity)]:
-            os.remove(os.path.join(logs_path, log_name))
+        log_paths = [log_file for log_file in list(path.rglob(f'{self._log_name_prefix}*')) if log_file.is_file()]
+        log_paths.sort()
+        for log_path in log_paths[:max(0, len(log_paths) - self._logs_capacity)]:
+            log_path.unlink()
         # log file settings
-        log_path = os.path.join(logs_path, f'{self._log_name_prefix}-{time.strftime("%y-%m-%d_%H-%M-%S")}.txt')
+        log_path = Path(path).joinpath(f'{self._log_name_prefix}-{time.strftime("%y-%m-%d_%H-%M-%S")}.txt')
         if not FileUtils.is_writable(log_path):
             raise IOError('The log file should be writable')
         # logging settings
