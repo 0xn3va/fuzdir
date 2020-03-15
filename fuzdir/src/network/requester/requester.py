@@ -17,12 +17,15 @@ class Requester:
     default_timeout = 5
     default_retries = 3
     default_status_list = frozenset([502, 503, 504])
+    default_http_method = 'GET'
     _min_retries = 0
     _max_retries = 5
 
     _back_off_factor = 0.3
 
-    def __init__(self, url: str,
+    def __init__(self,
+                 url: str,
+                 method: str = default_http_method,
                  user_agent: str = None,
                  cookie: str = None,
                  headers: dict = None,
@@ -33,6 +36,7 @@ class Requester:
                  raise_on_status: bool = True,
                  throttling_period: float = None,
                  proxy: str = None):
+        self.method = method
         parsed_url = parse_url(url)
         scheme = parsed_url.scheme or Schemes.default
         if scheme not in Schemes.allowable:
@@ -82,12 +86,12 @@ class Requester:
         def get(func, *args):
             return func(*args)
 
-        return get(self._request, 'GET', path)
+        return get(self._request, path)
 
-    def _request(self, method: str, path: str):
+    def _request(self, path: str):
         headers = dict(self._headers)
         headers[HeaderNames.user_agent] = self._user_agent or NetworkUtils.random_ua()
-        return self._session.request(method=method,
+        return self._session.request(method=self.method,
                                      url=f'{self._url}{path}',
                                      headers=headers,
                                      timeout=self._timeout,

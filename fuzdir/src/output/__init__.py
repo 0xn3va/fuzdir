@@ -25,8 +25,8 @@ def banner(banner: str):
     output.banner(banner)
 
 
-def summary(log_path: str, threads: int, dictionary_size: int, target: str):
-    output.summary(log_path, threads, dictionary_size, target)
+def summary(log_path: str, threads: int, method: str, dictionary_size: int, target: str):
+    output.summary(log_path, threads, method, dictionary_size, target)
 
 
 def progress_bar(percent: float):

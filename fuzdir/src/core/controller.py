@@ -52,6 +52,7 @@ class Controller:
                                                                  path=argument_manager.extensions_file))
 
             requester = Requester(url=argument_manager.url,
+                                  method=argument_manager.method,
                                   user_agent=argument_manager.user_agent,
                                   cookie=argument_manager.cookie,
                                   headers=argument_manager.headers,
@@ -67,8 +68,8 @@ class Controller:
             self._fuzzer = Fuzzer(dictionary=dictionary, requester=requester, filter=filter,
                                   threads=argument_manager.threads)
             # print summary
-            output.summary(log_path=log_path, threads=self._fuzzer.threads, dictionary_size=len(dictionary),
-                           target=requester.url)
+            output.summary(log_path=log_path, threads=self._fuzzer.threads, method=requester.method,
+                           dictionary_size=len(dictionary), target=requester.url)
         except (IOError, PermissionError, EncodingError, RequesterError, FilterError) as e:
             output.error(str(e))
             exit(0)
