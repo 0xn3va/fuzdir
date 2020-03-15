@@ -9,6 +9,6 @@ class StoreNaturalNumber(argparse.Action):
             value = int(values)
             if value <= 0:
                 raise ValueError
-            setattr(namespace, self.dest, values)
+            setattr(namespace, self.dest, value)
         except ValueError:
             raise ArgumentManagerError(f'Argument with value: {values} must be an integer and above zero')
