@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.2
+
+### Added
+
+- Supporting HTTP methods
+
+### Fixed
+
+- Threads arg incorrect type
+
 ## 1.0.1
 
 ### Added

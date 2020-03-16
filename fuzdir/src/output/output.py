@@ -28,11 +28,12 @@ class Output(metaclass=Singleton):
     def banner(self, banner: str):
         self.line(f'{Style.BRIGHT}{Fore.YELLOW}{banner}{Style.RESET_ALL}')
 
-    def summary(self, log_path: str, threads: int, dictionary_size: int, target: str):
+    def summary(self, log_path: str, threads: int, method: str, dictionary_size: int, target: str):
         self.line(f'Log file: {log_path}\n')
         threads_value = f'{Fore.CYAN}{threads}{Fore.YELLOW}'
+        method_value = f'{Fore.CYAN}{method.upper()}{Fore.YELLOW}'
         dictionary_value = f'{Fore.CYAN}{dictionary_size}{Fore.YELLOW}'
-        self.line(f'{Style.BRIGHT}{Fore.YELLOW}Threads: {threads_value} | Wordlist size: {dictionary_value}\n{Style.RESET_ALL}')
+        self.line(f'{Style.BRIGHT}{Fore.YELLOW}Threads: {threads_value} | Method: {method_value} | Wordlist size: {dictionary_value}\n{Style.RESET_ALL}')
         target_value = f'{Fore.CYAN}{target}{Fore.YELLOW}'
         self.line(f'{Style.BRIGHT}{Fore.YELLOW}Target: {target_value}\n{Style.RESET_ALL}')
 

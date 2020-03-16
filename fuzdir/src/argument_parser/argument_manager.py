@@ -18,17 +18,19 @@ class ArgumentManager:
     _words_file_help = 'path to word list'
     _extensions_help = 'extension list separated by comma'
     _extensions_file_help = 'path to file with extensions'
-    _threads_help_format = 'the maximum number of threads that can be used to requests, by default %d threads'
-    _timeout_help_format = 'connection timeout, by default %ds.'
-    _retry_help_format = 'number of attempts to connect to the server, by default %d times'
-    _retry_status_list_help_format = 'a comma-separated list of HTTP status codes for which should be retry on, ' \
-                                     'by default %s'
+    _method_help = f'HTTP method to use^ by default is {Requester.default_http_method}'
+    _threads_help = f'the maximum number of threads that can be used to requests, ' \
+                    f'by default {Fuzzer.default_threads} threads'
+    _timeout_help = f'connection timeout, by default {Requester.default_timeout}s.'
+    _retry_help = f'number of attempts to connect to the server, by default {Requester.default_retries} times'
+    _retry_status_list_help = f'a comma-separated list of HTTP status codes for which should be retry on, ' \
+                              f'by default {", ".join([str(s) for s in Requester.default_status_list])}'
     _ignore_retry_fail_help = 'ignore failed attempts to connect to server and continue fuzzing'
     _throttling_help = 'delay time in seconds (float) between requests sending, ' \
                        'if the throttling value is not specified, it will automatically adjust during fuzzing'
     _proxy_help = 'HTTP or SOCKS5 proxy\n' \
-                  + 'usage format:\n' \
-                  + '  [http|socks5]://user:pass@host:port\n'
+                  'usage format:\n' \
+                  '  [http|socks5]://user:pass@host:port\n'
     _user_agent_help = 'custom user agent, by default setting random user agent'
     _header_help = 'pass custom header(s)'
     _allow_redirect_help = 'allow follow up to redirection'
@@ -36,18 +38,18 @@ class ArgumentManager:
     _plain_report_help = 'a plain text reporting about the found status code, content length and path'
     _json_report_help = 'a reporting in JSON about the found status code, content length and path'
     _conditions_help = 'conditions for responses matching\n' \
-                       + 'available conditions:\n' \
-                       + '  code\t\tfilter by status code\n' \
-                       + '  length\tfilter by content length\n' \
-                       + '  grep\t\tfilter by regex in response headers or / and body\n' \
-                       + 'usage format:\n' \
-                       + '  [ignore]:<condition>:[<area>]=<args>\n' \
-                       + 'examples:\n' \
-                       + '  code=200,500\t\tmatch responses with 200 or 500 status code\n' \
-                       + '  ignore:code=404\tmatch responses exclude with 404 status code\n' \
-                       + '  length=0-1337,7331\tmatch responses with content length between 0 and 1337 or equals 7331\n' \
-                       + '  grep=\'regex\'\t\tmatch responses with \'regex\' in headers or body\n' \
-                       + '  grep:body=\'regex\'\tmatch responses with \'regex\' in body\n'
+                       'available conditions:\n' \
+                       '  code\t\tfilter by status code\n' \
+                       '  length\tfilter by content length\n' \
+                       '  grep\t\tfilter by regex in response headers or / and body\n' \
+                       'usage format:\n' \
+                       '  [ignore]:<condition>:[<area>]=<args>\n' \
+                       'examples:\n' \
+                       '  code=200,500\t\tmatch responses with 200 or 500 status code\n' \
+                       '  ignore:code=404\tmatch responses exclude with 404 status code\n' \
+                       '  length=0-1337,7331\tmatch responses with content length between 0 and 1337 or equals 7331\n' \
+                       '  grep=\'regex\'\t\tmatch responses with \'regex\' in headers or body\n' \
+                       '  grep:body=\'regex\'\tmatch responses with \'regex\' in body\n'
     _examples = 'examples:\n' \
                 + '  fuzdir -u https://example.com -W wordlist.txt\n' \
                 + '  fuzdir -u https://example.com -w index,robots -e html,txt\n' \
@@ -66,6 +68,7 @@ class ArgumentManager:
             self.extensions = args.extensions
             self.extensions_file = args.extensions_file
             # connection arguments
+            self.method = args.method
             self.threads = args.threads
             self.timeout = args.timeout
             self.retry = args.retry
@@ -113,16 +116,18 @@ class ArgumentManager:
                                      metavar='PATH', help=self._extensions_file_help)
         # connection group
         connection_group = parser.add_argument_group('connection settings')
+        connection_group.add_argument('-m', '--method', default=Requester.default_http_method, dest='method',
+                                      action='store', help=self._method_help)
         connection_group.add_argument('-t', '--threads', default=Fuzzer.default_threads, dest='threads',
-                                      action=StoreNaturalNumber, help=self._threads_help_format % (Fuzzer.default_threads,))
+                                      action=StoreNaturalNumber, help=self._threads_help)
         connection_group.add_argument('--timeout', type=int, default=Requester.default_timeout, dest='timeout',
-                                      action='store', help=self._timeout_help_format % (Requester.default_timeout,))
+                                      action='store', help=self._timeout_help)
         connection_group.add_argument('--retry', type=int, default=Requester.default_retries, dest='retry',
-                                      action='store', help=self._retry_help_format % (Requester.default_retries,))
+                                      action='store', help=self._retry_help)
         retry_status_list = ', '.join([str(s) for s in Requester.default_status_list])
         connection_group.add_argument('--retry-status-list', default=Requester.default_status_list,
                                       dest='retry_status_list', action=StoreList, metavar='STATUS_LIST',
-                                      help=self._retry_status_list_help_format % (retry_status_list,))
+                                      help=self._retry_status_list_help)
         connection_group.add_argument('--ignore-retry-fail', dest='raise_on_status', action='store_false',
                                       help=self._ignore_retry_fail_help)
         connection_group.add_argument('--throttling', default=0, type=float, dest='throttling_period', action='store',
