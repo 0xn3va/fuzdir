@@ -17,7 +17,7 @@ from src.network.requester.requester import Requester
 
 MAJOR_VERSION = 1
 MINOR_VERSION = 0
-REVISION = '.1'
+REVISION = '.2'
 VERSION = {
     "MAJOR_VERSION": MAJOR_VERSION,
     "MINOR_VERSION": MINOR_VERSION,
