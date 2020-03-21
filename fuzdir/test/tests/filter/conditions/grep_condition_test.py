@@ -1,6 +1,6 @@
 import unittest
 
-from src.argument_parser.actions.condition_parser.implement.grep_condition_parser import GrepConditionParser
+from src.argument_parser.actions.parsers.condition.implement.grep_condition_parser import GrepConditionParser
 from src.filter.condition.implement.grep_condition import GrepCondition
 from src.network.requester.requester import Requester
 from test import ignore_resource_warning

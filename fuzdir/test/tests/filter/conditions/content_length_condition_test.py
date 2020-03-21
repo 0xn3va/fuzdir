@@ -1,6 +1,6 @@
 import unittest
 
-from src.argument_parser.actions.condition_parser.implement.content_length_condition_parser import \
+from src.argument_parser.actions.parsers.condition.implement.content_length_condition_parser import \
     ContentLengthConditionParser
 from src.filter.condition.implement.content_length_condition import ContentLengthCondition
 from src.network.requester.requester import Requester

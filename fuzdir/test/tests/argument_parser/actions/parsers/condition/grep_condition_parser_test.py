@@ -1,7 +1,7 @@
 import unittest
 
-from src.argument_parser.actions.condition_parser.condition_parser_error import ConditionParserError
-from src.argument_parser.actions.condition_parser.implement.grep_condition_parser import GrepConditionParser
+from src.argument_parser.actions.parsers.condition.condition_parser_error import ConditionParserError
+from src.argument_parser.actions.parsers.condition.implement.grep_condition_parser import GrepConditionParser
 
 
 class GrepConditionParserTest(unittest.TestCase):

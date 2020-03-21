@@ -1,6 +1,6 @@
 import unittest
 
-from src.argument_parser.actions.condition_parser.implement.status_code_condition_parser import \
+from src.argument_parser.actions.parsers.condition.implement.status_code_condition_parser import \
     StatusCodeConditionParser
 from src.filter.condition.implement.status_code_condition import StatusCodeCondition
 from src.network.requester.requester import Requester

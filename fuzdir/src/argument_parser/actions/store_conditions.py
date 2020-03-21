@@ -1,10 +1,10 @@
 import argparse
 
-from src.argument_parser.actions.condition_parser.condition_parser_error import ConditionParserError
-from src.argument_parser.actions.condition_parser.implement.content_length_condition_parser import \
+from src.argument_parser.actions.parsers.condition.condition_parser_error import ConditionParserError
+from src.argument_parser.actions.parsers.condition.implement.content_length_condition_parser import \
     ContentLengthConditionParser
-from src.argument_parser.actions.condition_parser.implement.grep_condition_parser import GrepConditionParser
-from src.argument_parser.actions.condition_parser.implement.status_code_condition_parser import \
+from src.argument_parser.actions.parsers.condition.implement.grep_condition_parser import GrepConditionParser
+from src.argument_parser.actions.parsers.condition.implement.status_code_condition_parser import \
     StatusCodeConditionParser
 from src.argument_parser.argument_manager_error import ArgumentManagerError
 from src.filter.filter_type import FilterType
