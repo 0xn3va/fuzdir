@@ -6,14 +6,10 @@ from src.filter.condition.condition_priority import ConditionPriority
 
 
 class Condition(ABC):
-    _args_separator = ','
-
-    def __init__(self, priority: ConditionPriority):
+    def __init__(self, priority: ConditionPriority, area: str, args):
         self.priority = priority
-
-    @abstractmethod
-    def setup(self, args: str, area: str):
-        return
+        self._area = area
+        self._args = args
 
     @abstractmethod
     def match(self, response: Response) -> bool:

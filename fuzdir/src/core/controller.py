@@ -4,14 +4,15 @@ from pathlib import Path
 
 from src import output
 from src.argument_parser.argument_manager import ArgumentManager
+from src.argument_parser.argument_manager_error import ArgumentManagerError
 from src.core.fuzzer import Fuzzer
 from src.dictionary.extension_list import ExtensionList
 from src.dictionary.word_list import WordList
+from src.output.report.report_error import ReportError
 from src.utils.file_utils import FileUtils
 from src.dictionary.utils.encoding_error import EncodingError
 from src.dictionary.dictionary import Dictionary
 from src.filter.filter import Filter
-from src.filter.filter_error import FilterError
 from src.network.requester.requester_error import RequesterError
 from src.network.requester.requester import Requester
 
@@ -35,6 +36,7 @@ class Controller:
     _log_name_prefix = 'log'
 
     def __init__(self, root_path: str):
+        argument_manager = ArgumentManager()
         try:
             # print banner
             with open(Path(root_path).joinpath(self._banner_filename), 'r') as banner_file:
@@ -42,10 +44,10 @@ class Controller:
             banner = banner.format(**VERSION)
             output.banner(banner=banner)
             # parse and prepare arguments
-            argument_manager = ArgumentManager()
+            argument_manager.parse_args()
             # logging config
             log_path = self._logging_setup(root_path, argument_manager.verbose)
-            output.config(report_type=argument_manager.report_type, filename=argument_manager.report_path)
+            output.setup(config=argument_manager.report_config)
             # setting main components
             dictionary = Dictionary(word_list=WordList(words=argument_manager.words, path=argument_manager.words_file),
                                     extension_list=ExtensionList(extensions=argument_manager.extensions,
@@ -70,7 +72,9 @@ class Controller:
             # print summary
             output.summary(log_path=log_path, threads=self._fuzzer.threads, method=requester.method,
                            dictionary_size=len(dictionary), target=requester.url)
-        except (IOError, PermissionError, EncodingError, RequesterError, FilterError) as e:
+        except (IOError, PermissionError, EncodingError, ArgumentManagerError, RequesterError, ReportError) as e:
+            if isinstance(e, ArgumentManagerError):
+                output.line(argument_manager.format_usage())
             output.error(str(e))
             exit(0)
 

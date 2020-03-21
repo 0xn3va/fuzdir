@@ -79,13 +79,14 @@ filter:
                           length	filter by content length
                           grep		filter by regex in response headers or / and body
                         usage format:
-                          [ignore]:<condition>:[<area>]=<args>
+                          [ignore]:<condition>:[<area>]=<args>[;]
                         examples:
                           code=200,500		    match responses with 200 or 500 status code
                           ignore:code=404	    match responses exclude with 404 status code
                           length=0-1337,7331	match responses with content length between 0 and 1337 or equals 7331
                           grep='regex'		    match responses with 'regex' in headers or body
                           grep:body='regex'	    match responses with 'regex' in body
+                          code=200;length=0-1337\tmatch responses with 200 status code and content length between 0 and 1337
 
 examples:
   fuzdir -u https://example.com -W wordlist.txt
@@ -138,7 +139,7 @@ By default, if all attempts were fail, fuzzing will be interrupted and the progr
 ### Conditions
 Conditions is a system for filtering HTTP responses during fuzzing. 
 
-Usage format `[ignore]:<condition>:[<area>]=<args>`
+Usage format `[ignore]:<condition>:[<area>]=<args>[;]`
 - `ignore` condition inverting,
 - `condition` condition name,
 - `area` search area (only grep supported),
@@ -151,3 +152,5 @@ Currently it supports the following conditions:
 | code      | no    | list of status codes (or ranges) separated by comma | `-x code=200,500-503` match responses with 200, 500, 501, 502, or 503 status code |
 | length    | no    | list of lengths (or ranges) separated by comma | `-x length=0-1337,7331` match responses with content length between 0 and 1337 or equals 7331 |
 | grep      | headers, body | regex | `-x grep=token` match responses which contains 'token' in headers or body <br/>`-x grep:body=token` match responses which contains 'token' in body |
+
+You can use multiple conditions, separating them with a semicolon, for example: `-x code=200;length=0-1337`
