@@ -10,7 +10,7 @@ def read(filename: str) -> str:
 
 setup(
     name='fuzdir',
-    version='1.0.2',
+    version='1.0.3',
     description='Web path fuzzer',
     url='https://github.com/0xn3v4/fuzdir',
     author='n3va',

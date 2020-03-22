@@ -3,6 +3,7 @@ import random
 import string
 import unittest
 import tempfile
+from pathlib import Path
 
 from src.utils.file_utils import FileUtils
 
@@ -14,14 +15,16 @@ class FileUtilsTest(unittest.TestCase):
     def test_is_writable(self):
         def dir_writable():
             with tempfile.TemporaryDirectory() as temp_dirname:
-                temp_file = tempfile.NamedTemporaryFile(prefix=os.path.join(temp_dirname, ''))
+                temp_dirname = Path(temp_dirname)
+                named_temp_file = tempfile.NamedTemporaryFile(prefix=os.path.join(temp_dirname, ''))
                 try:
-                    os.chmod(temp_dirname, mode=0o555)
-                    is_writable = FileUtils.is_writable(temp_file.name)
-                    os.chmod(temp_dirname, mode=0o777)
-                    os.chmod(temp_file.name, mode=0o777)
+                    temp_dirname.chmod(mode=0o555)
+                    temp_file = Path(named_temp_file.name)
+                    is_writable = FileUtils.is_writable(temp_file)
+                    temp_dirname.chmod(mode=0o777)
+                    temp_file.chmod(mode=0o777)
                 finally:
-                    temp_file.close()
+                    named_temp_file.close()
             return is_writable
 
         def is_file():
@@ -29,13 +32,14 @@ class FileUtilsTest(unittest.TestCase):
                 return FileUtils.is_writable(temp_dirname)
 
         def file_writable():
-            temp_file = tempfile.NamedTemporaryFile()
+            named_temp_file = tempfile.NamedTemporaryFile()
             try:
-                os.chmod(temp_file.name, mode=0o555)
-                is_writable = FileUtils.is_writable(temp_file.name)
-                os.chmod(temp_file.name, mode=0o777)
+                temp_file = Path(named_temp_file.name)
+                temp_file.chmod(mode=0o555)
+                is_writable = FileUtils.is_writable(temp_file)
+                temp_file.chmod(mode=0o777)
             finally:
-                temp_file.close()
+                named_temp_file.close()
             return is_writable
 
         self.assertFalse(dir_writable(), msg='Check on write permissions to parent directory failed')
@@ -45,13 +49,14 @@ class FileUtilsTest(unittest.TestCase):
 
     def test_is_readable(self):
         def file_readable():
-            temp_file = tempfile.NamedTemporaryFile()
+            named_temp_file = tempfile.NamedTemporaryFile()
             try:
-                os.chmod(temp_file.name, mode=0o333)
-                is_readable = FileUtils.is_readable(temp_file.name)
-                os.chmod(temp_file.name, mode=0o777)
+                temp_file = Path(named_temp_file.name)
+                temp_file.chmod(mode=0o333)
+                is_readable = FileUtils.is_readable(temp_file)
+                temp_file.chmod(mode=0o777)
             finally:
-                temp_file.close()
+                named_temp_file.close()
             return is_readable
 
         def is_file():
@@ -64,8 +69,7 @@ class FileUtilsTest(unittest.TestCase):
 
     def _get_fake_filename(self):
         while True:
-            filename = os.path.join(tempfile.gettempdir(),
-                                    ''.join(random.choice(self._symbols) for _ in range(self._name_length)))
-            if os.path.exists(filename):
+            filename = Path(tempfile.gettempdir()).joinpath(''.join(random.choice(self._symbols) for _ in range(self._name_length)))
+            if filename.exists():
                 continue
             return filename

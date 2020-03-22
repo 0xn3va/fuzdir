@@ -1,27 +1,29 @@
 import logging
 import threading
 
-from src.output.report.implement.json_report import JSONReport
+from src.output.report.implement.json_report import JsonReport
 from src.output.report.implement.plain_report import PlainReport
 from src.output.report.report_type import ReportType
 
 
 class ReportManager:
     _handlers = {
-        ReportType.plain_text: PlainReport,
-        ReportType.json_report: JSONReport
+        ReportType.plain: PlainReport,
+        ReportType.json: JsonReport
     }
 
     def __init__(self):
         self._lock = threading.Lock()
         self._report = None
 
-    def config(self, report_type: ReportType, filename: str):
-        if report_type is not None:
+    def setup(self, config: tuple):
+        if config is not None:
             with self._lock:
                 if self._report is not None:
-                    logging.warning('Shutdown is\'t called before reconfiguration')
-                self._report = self._handlers[report_type](filename)
+                    logging.warning('Shutdown is not called before reconfiguration')
+
+                name, filename, components = config
+                self._report = self._handlers[name](components, filename)
 
     def shutdown(self):
         with self._lock:

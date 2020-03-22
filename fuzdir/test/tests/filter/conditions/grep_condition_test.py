@@ -1,7 +1,7 @@
 import unittest
 
+from src.argument_parser.actions.parsers.condition.implement.grep_condition_parser import GrepConditionParser
 from src.filter.condition.implement.grep_condition import GrepCondition
-from src.filter.filter_error import FilterError
 from src.network.requester.requester import Requester
 from test import ignore_resource_warning
 from test.mocks.httpserver.http_request_handler import HTTPRequestHandler
@@ -10,13 +10,6 @@ from test.mocks.utils import random_port, random_string
 
 
 class GrepConditionTest(unittest.TestCase):
-    def test_setup(self):
-        condition = GrepCondition()
-        with self.assertRaises(FilterError, msg='Check on invalid pattern failed'):
-            condition.setup(args='[', area='')
-        with self.assertRaises(FilterError, msg='Check on invalid grep part failed'):
-            condition.setup(args='', area='test')
-
     @ignore_resource_warning
     def test_match(self):
         class Handler(HTTPRequestHandler):
@@ -30,18 +23,24 @@ class GrepConditionTest(unittest.TestCase):
                                            'Content-Length': content_length})
                 self.wfile.write(b'%b%b' % (payload, end,))
 
-        condition = GrepCondition()
         with HTTPServerManager(handler=Handler, port=random_port()) as server:
             response = Requester(url=server.url).request(random_string())
-            condition.setup(args='abc', area='headers')
+
+            parser = GrepConditionParser()
+            condition = GrepCondition(args=parser.parse_arguments('abc'), area='headers')
             self.assertFalse(condition.match(response), msg='Check on wrong pattern in headers failed')
-            condition.setup(args='headers_grep*', area='headers')
+
+            condition = GrepCondition(args=parser.parse_arguments('headers_grep*'), area='headers')
             self.assertTrue(condition.match(response), msg='Check on right pattern in headers failed')
-            condition.setup(args='abc', area='body')
+
+            condition = GrepCondition(args=parser.parse_arguments('abc'), area='body')
             self.assertFalse(condition.match(response), msg='Check on wrong pattern in body failed')
-            condition.setup(args='body_grep*', area='body')
+
+            condition = GrepCondition(args=parser.parse_arguments('body_grep*'), area='body')
             self.assertTrue(condition.match(response), msg='Check on right pattern in body failed')
-            condition.setup(args='abc', area='')
+
+            condition = GrepCondition(args=parser.parse_arguments('abc'), area='')
             self.assertFalse(condition.match(response), msg='Check on wrong pattern in headers or body failed')
-            condition.setup(args='/*grep_value', area='')
+
+            condition = GrepCondition(args=parser.parse_arguments('/*grep_value'), area='')
             self.assertTrue(condition.match(response), msg='Check on right pattern in headers or body failed')

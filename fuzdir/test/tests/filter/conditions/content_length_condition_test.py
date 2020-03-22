@@ -1,7 +1,8 @@
 import unittest
 
+from src.argument_parser.actions.parsers.condition.implement.content_length_condition_parser import \
+    ContentLengthConditionParser
 from src.filter.condition.implement.content_length_condition import ContentLengthCondition
-from src.filter.filter_error import FilterError
 from src.network.requester.requester import Requester
 from test import ignore_resource_warning
 from test.mocks.httpserver.http_request_handler import HTTPRequestHandler
@@ -10,22 +11,6 @@ from test.mocks.utils import random_port, random_string
 
 
 class ContentLengthConditionTest(unittest.TestCase):
-    def test_setup(self):
-        condition = ContentLengthCondition()
-        # empty line
-        with self.assertRaises(FilterError, msg='Check on setup with empty line failed'):
-            condition.setup(args='-', area='')
-        # incorrect length
-        with self.assertRaises(FilterError, msg='Check on setup with incorrect length failed'):
-            condition.setup(args='-10', area='')
-        # incorrect range
-        with self.assertRaises(FilterError, msg='Check on setup with incorrect range failed'):
-            condition.setup(args='100-10', area='')
-        # list of status codes with separator in the end of line
-        condition.setup(args='10-100,10,', area='')
-        self.assertListEqual(condition._ranges, [(10, 100), (10, 10)],
-                             msg='Check on setup with separator in the end line failed')
-
     @ignore_resource_warning
     def test_match(self):
         class Handler(HTTPRequestHandler):
@@ -37,21 +22,21 @@ class ContentLengthConditionTest(unittest.TestCase):
                                   headers={'Content-Type': 'text/html', 'Content-Length': content_length})
                 self.wfile.write(b'%b%b' % (payload, end,))
 
-        condition = ContentLengthCondition()
         with HTTPServerManager(handler=Handler, port=random_port()) as server:
             response = Requester(url=server.url).request(random_string())
-            # wrong length
-            condition.setup(args='0', area='')
+
+            parser = ContentLengthConditionParser()
+            condition = ContentLengthCondition(args=parser.parse_arguments('0'), area='')
             self.assertFalse(condition.match(response), msg='Check on wrong length matching failed')
-            # right length
-            condition.setup(args='16', area='')
+
+            condition = ContentLengthCondition(args=parser.parse_arguments('16'), area='')
             self.assertTrue(condition.match(response), msg='Check on right length matching failed')
-            # wrong range
-            condition.setup(args='0-10', area='')
+
+            condition = ContentLengthCondition(args=parser.parse_arguments('0-10'), area='')
             self.assertFalse(condition.match(response), msg='Check on wrong range matching failed')
-            # right range
-            condition.setup(args='0-20', area='')
+
+            condition = ContentLengthCondition(args=parser.parse_arguments('0-20'), area='')
             self.assertTrue(condition.match(response), msg='Check on right range matching failed')
-            # multiple ranges
-            condition.setup(args='10-18,20-30', area='')
+
+            condition = ContentLengthCondition(args=parser.parse_arguments('10-18,20-30'), area='')
             self.assertTrue(condition.match(response), msg='Check on multiple ranges matching failed')

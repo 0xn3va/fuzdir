@@ -1,0 +1,3 @@
+
+class ReportParserError(Exception):
+    pass

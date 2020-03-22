@@ -1,6 +1,4 @@
-from enum import Enum
 
-
-class ReportType(Enum):
-    plain_text = 0
-    json_report = 1
+class ReportType:
+    plain = 'plain'
+    json = 'json'

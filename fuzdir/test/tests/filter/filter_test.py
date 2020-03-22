@@ -1,7 +1,7 @@
 import unittest
 
+from src.argument_parser.argument_manager import ArgumentManager
 from src.filter.filter import Filter
-from src.filter.filter_error import FilterError
 from src.network.requester.requester import Requester
 
 from test import ignore_resource_warning
@@ -12,17 +12,9 @@ from test.mocks.utils import random_port, random_string
 
 class FilterTest(unittest.TestCase):
     def test_init(self):
-        with self.assertRaises(FilterError, msg='Check on empty args failed'):
-            _ = Filter(conditions='condition=')
-        with self.assertRaises(FilterError, msg='Check on prefix for ignoring failed'):
-            _ = Filter(conditions='not_ignore:condition=args')
-        with self.assertRaises(FilterError, msg='Check on incorrect condition name failed'):
-            _ = Filter(conditions='condition=args')
-        with self.assertRaises(FilterError, msg='Check on incorrect arguments for condition setup failed'):
-            _ = Filter(conditions='code=0')
-        with self.assertRaises(FilterError, msg='Check on incorrect mode for condition setup failed'):
-            _ = Filter(conditions='grep:area=args')
-        filter = Filter(conditions='grep:body=args;code=400;length=10;')
+        argument_manager = ArgumentManager()
+        argument_manager.parse_args(['-u http://localhost', '-w a', '-x grep:body=args;code=400;length=10;'])
+        filter = Filter(conditions=argument_manager.conditions)
         for c1, c2 in zip(filter._conditions[:-1], filter._conditions[1:]):
             _, c1 = c1
             _, c2 = c2
@@ -37,11 +29,19 @@ class FilterTest(unittest.TestCase):
 
         with HTTPServerManager(handler=Handler, port=random_port()) as server:
             response = Requester(url=server.url).request(random_string())
-            filter = Filter(conditions='code=200')
+            argument_manager = ArgumentManager()
+            argument_manager.parse_args(['-u http://localhost', '-w a', '-x code=200'])
+            filter = Filter(conditions=argument_manager.conditions)
             self.assertTrue(filter.inspect(response), msg='Check on right inspection failed')
-            filter = Filter(conditions='code=400')
+
+            argument_manager.parse_args(['-u http://localhost', '-w a', '-x code=400'])
+            filter = Filter(conditions=argument_manager.conditions)
             self.assertFalse(filter.inspect(response), msg='Check on wrong inspection failed')
-            filter = Filter(conditions='ignore:code=200')
+
+            argument_manager.parse_args(['-u http://localhost', '-w a', '-x ignore:code=200'])
+            filter = Filter(conditions=argument_manager.conditions)
             self.assertFalse(filter.inspect(response), msg='Check on wrong inspection with ignoring failed')
-            filter = Filter(conditions='ignore:code=400')
+
+            argument_manager.parse_args(['-u http://localhost', '-w a', '-x ignore:code=400'])
+            filter = Filter(conditions=argument_manager.conditions)
             self.assertTrue(filter.inspect(response), msg='Check on right inspection with ignoring failed')

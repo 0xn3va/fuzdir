@@ -1,15 +1,13 @@
 import argparse
 
-from src import output
+from src.argument_parser.actions.store_conditions import StoreConditions
 from src.argument_parser.actions.store_natural_number import StoreNaturalNumber
 from src.argument_parser.actions.store_readable_file_path import StoreReadableFilePath
-from src.argument_parser.actions.store_writable_file_path import StoreWritableFilePath
-from src.argument_parser.argument_manager_error import ArgumentManagerError
 from src.argument_parser.actions.store_dict import StoreDict
 from src.argument_parser.actions.store_list import StoreList
+from src.argument_parser.actions.store_report import StoreReport
 from src.core.fuzzer import Fuzzer
 from src.network.requester.requester import Requester
-from src.output.report.report_type import ReportType
 
 
 class ArgumentManager:
@@ -35,21 +33,36 @@ class ArgumentManager:
     _header_help = 'pass custom header(s)'
     _allow_redirect_help = 'allow follow up to redirection'
     _logging_help = 'verbose logging'
-    _plain_report_help = 'a plain text reporting about the found status code, content length and path'
-    _json_report_help = 'a reporting in JSON about the found status code, content length and path'
+    _report_help = 'reports on responses\n' \
+                   'available types:\n' \
+                   '  plain\t\ta plain text reporting\n' \
+                   '  json\t\ta reporting in JSON\n' \
+                   'usage format:\n' \
+                   '  <type>[:components]=<path>\n' \
+                   'available components:\n' \
+                   '  json:\n' \
+                   '    body\ta response body\n' \
+                   '    length\ta response content length\n' \
+                   '    headers\ta response headers\n' \
+                   '    code\ta response status code\n' \
+                   'examples:\n' \
+                   '  plain=/tmp/report.txt\t\t\ta plain text reporting about the found status code, content length and path\n' \
+                   '  json=/tmp/report.json\t\t\ta reporting in JSON about the found status code, content length and path\n' \
+                   '  json:code,body=/tmp/report.json\ta reporting in JSON about the found status code, body and path\n'
     _conditions_help = 'conditions for responses matching\n' \
                        'available conditions:\n' \
                        '  code\t\tfilter by status code\n' \
                        '  length\tfilter by content length\n' \
                        '  grep\t\tfilter by regex in response headers or / and body\n' \
                        'usage format:\n' \
-                       '  [ignore]:<condition>:[<area>]=<args>\n' \
+                       '  [ignore:]<condition>[:<area>]=<args>[;]\n' \
                        'examples:\n' \
-                       '  code=200,500\t\tmatch responses with 200 or 500 status code\n' \
-                       '  ignore:code=404\tmatch responses exclude with 404 status code\n' \
-                       '  length=0-1337,7331\tmatch responses with content length between 0 and 1337 or equals 7331\n' \
-                       '  grep=\'regex\'\t\tmatch responses with \'regex\' in headers or body\n' \
-                       '  grep:body=\'regex\'\tmatch responses with \'regex\' in body\n'
+                       '  code=200,500\t\t\tmatch responses with 200 or 500 status code\n' \
+                       '  ignore:code=404\t\tmatch responses exclude with 404 status code\n' \
+                       '  length=0-1337,7331\t\tmatch responses with content length between 0 and 1337 or equals 7331\n' \
+                       '  grep=\'regex\'\t\t\tmatch responses with \'regex\' in headers or body\n' \
+                       '  grep:body=\'regex\'\t\tmatch responses with \'regex\' in body\n' \
+                       '  code=200;length=0-1337\tmatch responses with 200 status code and content length between 0 and 1337\n'
     _examples = 'examples:\n' \
                 + '  fuzdir -u https://example.com -W wordlist.txt\n' \
                 + '  fuzdir -u https://example.com -w index,robots -e html,txt\n' \
@@ -57,45 +70,8 @@ class ArgumentManager:
                 + '  fuzdir -u https://example.com -W wordlist.txt -x code=200;ignore:grep:headers=\'Auth\''
 
     def __init__(self):
-        parser = self._create_parser()
-        try:
-            args = parser.parse_args()
-            # necessary arguments
-            self.url = args.url
-            self.words = args.words
-            self.words_file = args.words_file
-            # extensions arguments
-            self.extensions = args.extensions
-            self.extensions_file = args.extensions_file
-            # connection arguments
-            self.method = args.method
-            self.threads = args.threads
-            self.timeout = args.timeout
-            self.retry = args.retry
-            self.retry_status_list = set(args.retry_status_list)
-            self.raise_on_status = args.raise_on_status
-            self.throttling_period = args.throttling_period
-            self.proxy = args.proxy
-            # request arguments
-            self.user_agent = args.user_agent
-            self.cookie = args.cookie
-            self.headers = args.headers
-            self.allow_redirect = args.allow_redirect
-            # logging arguments
-            self.verbose = args.verbose
-            # report arguments
-            self.report_type = None
-            self.report_path = args.plain_report or args.json_report
-            if args.plain_report is not None:
-                self.report_type = ReportType.plain_text
-            elif args.json_report is not None:
-                self.report_type = ReportType.json_report
-            # filter arguments
-            self.conditions = args.conditions
-        except ArgumentManagerError as e:
-            output.line(parser.format_usage())
-            output.error(str(e))
-            exit(0)
+        self._parser = self._create_parser()
+        self._args = None
 
     def _create_parser(self):
         parser = argparse.ArgumentParser(prog='fuzdir', epilog=self._examples,
@@ -124,7 +100,6 @@ class ArgumentManager:
                                       action='store', help=self._timeout_help)
         connection_group.add_argument('--retry', type=int, default=Requester.default_retries, dest='retry',
                                       action='store', help=self._retry_help)
-        retry_status_list = ', '.join([str(s) for s in Requester.default_status_list])
         connection_group.add_argument('--retry-status-list', default=Requester.default_status_list,
                                       dest='retry_status_list', action=StoreList, metavar='STATUS_LIST',
                                       help=self._retry_status_list_help)
@@ -147,13 +122,24 @@ class ArgumentManager:
         logging_group.add_argument('-v', '--verbose', dest='verbose', action='store_true', help=self._logging_help)
         # report arguments
         report_group = parser.add_argument_group('reports settings')
-        report_group = report_group.add_mutually_exclusive_group()
-        report_group.add_argument('--plain-report', dest='plain_report', action=StoreWritableFilePath, metavar='PATH',
-                                  help=self._plain_report_help)
-        report_group.add_argument('--json-report', dest='json_report', action=StoreWritableFilePath, metavar='PATH',
-                                  help=self._json_report_help)
+        report_group.add_argument('--report', default='', dest='report_config', action=StoreReport, metavar='CONFIG',
+                                  help=self._report_help)
         # filter arguments
         filter_group = parser.add_argument_group('filter')
-        filter_group.add_argument('-x', default='', dest='conditions', action='store', help=self._conditions_help)
+        filter_group.add_argument('-x', default='', dest='conditions', action=StoreConditions,
+                                  help=self._conditions_help)
 
         return parser
+
+    def parse_args(self, args=None, namespace=None):
+        self._args = self._parser.parse_args(args, namespace)
+        self._args.retry_status_list = set(self._args.retry_status_list)
+
+    def format_usage(self):
+        return self._parser.format_usage()
+
+    def __getattr__(self, item):
+        try:
+            return getattr(self._args, item)
+        except AttributeError:
+            raise AttributeError(f'\'ArgumentManager\' object has no attribute \'{item}\'')

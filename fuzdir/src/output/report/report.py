@@ -4,7 +4,8 @@ from requests import Response
 
 
 class Report(ABC):
-    def __init__(self, filename: str, mode: str = 'w', encoding: str = None):
+    def __init__(self, components: list, filename: str, mode: str = 'w', encoding: str = None, **kwargs):
+        self._components = components
         self._file = open(filename, mode=mode, encoding=encoding)
 
     def close(self):

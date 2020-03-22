@@ -9,8 +9,8 @@ output = Output()
 report = ReportManager()
 
 
-def config(report_type: ReportType, filename: str):
-    report.config(report_type, filename)
+def setup(config: tuple):
+    report.setup(config)
 
 
 def shutdown():
