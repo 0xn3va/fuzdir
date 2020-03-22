@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.3
+
+### Added
+
+- Combined reporting by one key
+- Added reporting components in JSON format
+
 ## 1.0.2
 
 ### Added
