@@ -24,17 +24,16 @@ class JsonReport(Report):
         self._is_empty = True
 
     def close(self):
-        self._write('\n}')
+        self._write('}')
         super(JsonReport, self).close()
 
     def write(self, response: Response):
         components = {}
         for component in self._components:
             components[component] = self._component_handlers[component](response)
-        response_json = dumps({NetworkUtils.path(response): components}, indent=4)
-        response_json = '\n'.join(response_json.split('\n')[1: -1])
+        response_json = dumps({NetworkUtils.path(response): components})[1: -1]
         if self._is_empty:
-            self._write(f'{{\n{response_json}', end='')
+            self._write(f'{{{response_json}', end='')
         else:
-            self._write(f',\n{response_json}', end='')
+            self._write(f', {response_json}', end='')
         self._is_empty = False
