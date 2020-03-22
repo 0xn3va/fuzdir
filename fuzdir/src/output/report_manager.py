@@ -23,7 +23,7 @@ class ReportManager:
                     logging.warning('Shutdown is not called before reconfiguration')
 
                 name, filename, components = config
-                self._report = self._handlers[name](config, filename)
+                self._report = self._handlers[name](components, filename)
 
     def shutdown(self):
         with self._lock:
