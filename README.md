@@ -21,11 +21,11 @@ $ fuzdir.py -u <url> -W <wordlist>
 Help message:
 ```bash
 usage: fuzdir [-h] -u URL (-w WORDS | -W PATH) [-e EXTENSIONS] [-E PATH]
-              [-t THREADS] [--timeout TIMEOUT] [--retry RETRY]
+              [-m METHOD] [-t THREADS] [--timeout TIMEOUT] [--retry RETRY]
               [--retry-status-list STATUS_LIST] [--ignore-retry-fail]
               [--throttling [SECONDS]] [--proxy URL] [--user-agent USER AGENT]
               [-c COOKIE] [-H HEADER] [--allow-redirect] [-v]
-              [--plain-report PATH | --json-report PATH] [-x CONDITIONS]
+              [--report CONFIG] [-x CONDITIONS]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -44,6 +44,8 @@ extensions settings:
                         path to file with extensions
 
 connection settings:
+  -m METHOD, --method METHOD
+                        HTTP method to use^ by default is GET
   -t THREADS, --threads THREADS
                         the maximum number of threads that can be used to requests, by default 10 threads
   --timeout TIMEOUT     connection timeout, by default 5s.
@@ -69,24 +71,38 @@ logging settings:
   -v, --verbose         verbose logging
 
 reports settings:
-  --plain-report PATH   a plain text reporting about the found status code, content length and path
-  --json-report PATH    a reporting in JSON about the found status code, content length and path
+  --report CONFIG       reports on responses
+                        available types:
+                          plain         a plain text reporting
+                          json          a reporting in JSON
+                        usage format:
+                          <type>[:components]=<path>
+                        available components:
+                          json:
+                            body        a response body
+                            length      a response content length
+                            headers     a response headers
+                            code        a response status code
+                        examples:
+                          plain=/tmp/report.txt                 a plain text reporting about the found status code, content length and path
+                          json=/tmp/report.json                 a reporting in JSON about the found status code, content length and path
+                          json:code,body=/tmp/report.json       a reporting in JSON about the found status code, body and path
 
 filter:
   -x CONDITIONS         conditions for responses matching
                         available conditions:
-                          code		filter by status code
-                          length	filter by content length
-                          grep		filter by regex in response headers or / and body
+                          code          filter by status code
+                          length        filter by content length
+                          grep          filter by regex in response headers or / and body
                         usage format:
-                          [ignore]:<condition>:[<area>]=<args>[;]
+                          [ignore:]<condition>[:<area>]=<args>[;]
                         examples:
-                          code=200,500		    match responses with 200 or 500 status code
-                          ignore:code=404	    match responses exclude with 404 status code
-                          length=0-1337,7331	match responses with content length between 0 and 1337 or equals 7331
-                          grep='regex'		    match responses with 'regex' in headers or body
-                          grep:body='regex'	    match responses with 'regex' in body
-                          code=200;length=0-1337\tmatch responses with 200 status code and content length between 0 and 1337
+                          code=200,500                  match responses with 200 or 500 status code
+                          ignore:code=404               match responses exclude with 404 status code
+                          length=0-1337,7331            match responses with content length between 0 and 1337 or equals 7331
+                          grep='regex'                  match responses with 'regex' in headers or body
+                          grep:body='regex'             match responses with 'regex' in body
+                          code=200;length=0-1337        match responses with 200 status code and content length between 0 and 1337
 
 examples:
   fuzdir -u https://example.com -W wordlist.txt
@@ -135,6 +151,27 @@ The number of attempts can be adjusted using `--retry` from 0 to 5 inclusive, by
 
 By default, if all attempts were fail, fuzzing will be interrupted and the program will exit. To avoid this, you can use
  `--ignore-retry-fail`.
+
+### Report
+You can write a fuzzing results to file with `--report` key.
+
+Usage format `<type>[:components]=<path>`
+- `type` report type,
+- `components` список компонент, которые должны быть включены в отчет,
+- `path` путь до файла.
+
+Currently it supports the following components:
+- `body` a response body,
+- `length` a response content length,
+- `headers` a response headers,
+- `code` a response status code.
+
+Currently it supports the following report types:
+
+| Type | Default Components | Supported Components | Examples |
+| ---- | :----------------: | :------------------: | -------- |
+| plain | code, length | no | `--report plain=/tmp/report.txt` a plain text reporting about the found status code, content length and path |
+| json | code, length | body, length, headers, code | `--report json=/tmp/report.txt` a reporting in JSON about the found status code, content length and path<br/>`--report json:code,body=/tmp/report.json` a reporting in JSON about the found status code, body and path |
 
 ### Conditions
 Conditions is a system for filtering HTTP responses during fuzzing. 

@@ -8,7 +8,6 @@ from src.argument_parser.argument_manager_error import ArgumentManagerError
 from src.core.fuzzer import Fuzzer
 from src.dictionary.extension_list import ExtensionList
 from src.dictionary.word_list import WordList
-from src.output.report.report_error import ReportError
 from src.utils.file_utils import FileUtils
 from src.dictionary.utils.encoding_error import EncodingError
 from src.dictionary.dictionary import Dictionary
@@ -72,7 +71,7 @@ class Controller:
             # print summary
             output.summary(log_path=log_path, threads=self._fuzzer.threads, method=requester.method,
                            dictionary_size=len(dictionary), target=requester.url)
-        except (IOError, PermissionError, EncodingError, ArgumentManagerError, RequesterError, ReportError) as e:
+        except (IOError, PermissionError, EncodingError, ArgumentManagerError, RequesterError) as e:
             if isinstance(e, ArgumentManagerError):
                 output.line(argument_manager.format_usage())
             output.error(str(e))

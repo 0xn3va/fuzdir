@@ -3,9 +3,9 @@ import argparse
 from src.argument_parser.actions.store_conditions import StoreConditions
 from src.argument_parser.actions.store_natural_number import StoreNaturalNumber
 from src.argument_parser.actions.store_readable_file_path import StoreReadableFilePath
-from src.argument_parser.actions.store_writable_file_path import StoreWritableFilePath
 from src.argument_parser.actions.store_dict import StoreDict
 from src.argument_parser.actions.store_list import StoreList
+from src.argument_parser.actions.store_report import StoreReport
 from src.core.fuzzer import Fuzzer
 from src.network.requester.requester import Requester
 
@@ -33,21 +33,35 @@ class ArgumentManager:
     _header_help = 'pass custom header(s)'
     _allow_redirect_help = 'allow follow up to redirection'
     _logging_help = 'verbose logging'
-    _plain_report_help = 'a plain text reporting about the found status code, content length and path'
-    _json_report_help = 'a reporting in JSON about the found status code, content length and path'
+    _report_help = 'reports on responses\n' \
+                   'available types:\n' \
+                   '  plain\t\ta plain text reporting\n' \
+                   '  json\t\ta reporting in JSON\n' \
+                   'usage format:\n' \
+                   '  <type>[:components]=<path>\n' \
+                   'available components:\n' \
+                   '  json:\n' \
+                   '    body\ta response body\n' \
+                   '    length\ta response content length\n' \
+                   '    headers\ta response headers\n' \
+                   '    code\ta response status code\n' \
+                   'examples:\n' \
+                   '  plain=/tmp/report.txt\t\t\ta plain text reporting about the found status code, content length and path\n' \
+                   '  json=/tmp/report.json\t\t\ta reporting in JSON about the found status code, content length and path\n' \
+                   '  json:code,body=/tmp/report.json\ta reporting in JSON about the found status code, body and path\n'
     _conditions_help = 'conditions for responses matching\n' \
                        'available conditions:\n' \
                        '  code\t\tfilter by status code\n' \
                        '  length\tfilter by content length\n' \
                        '  grep\t\tfilter by regex in response headers or / and body\n' \
                        'usage format:\n' \
-                       '  [ignore]:<condition>:[<area>]=<args>[;]\n' \
+                       '  [ignore:]<condition>[:<area>]=<args>[;]\n' \
                        'examples:\n' \
-                       '  code=200,500\t\tmatch responses with 200 or 500 status code\n' \
-                       '  ignore:code=404\tmatch responses exclude with 404 status code\n' \
-                       '  length=0-1337,7331\tmatch responses with content length between 0 and 1337 or equals 7331\n' \
-                       '  grep=\'regex\'\t\tmatch responses with \'regex\' in headers or body\n' \
-                       '  grep:body=\'regex\'\tmatch responses with \'regex\' in body\n' \
+                       '  code=200,500\t\t\tmatch responses with 200 or 500 status code\n' \
+                       '  ignore:code=404\t\tmatch responses exclude with 404 status code\n' \
+                       '  length=0-1337,7331\t\tmatch responses with content length between 0 and 1337 or equals 7331\n' \
+                       '  grep=\'regex\'\t\t\tmatch responses with \'regex\' in headers or body\n' \
+                       '  grep:body=\'regex\'\t\tmatch responses with \'regex\' in body\n' \
                        '  code=200;length=0-1337\tmatch responses with 200 status code and content length between 0 and 1337\n'
     _examples = 'examples:\n' \
                 + '  fuzdir -u https://example.com -W wordlist.txt\n' \
@@ -108,11 +122,8 @@ class ArgumentManager:
         logging_group.add_argument('-v', '--verbose', dest='verbose', action='store_true', help=self._logging_help)
         # report arguments
         report_group = parser.add_argument_group('reports settings')
-        report_group = report_group.add_mutually_exclusive_group()
-        report_group.add_argument('--plain-report', dest='plain_report', action=StoreWritableFilePath, metavar='PATH',
-                                  help=self._plain_report_help)
-        report_group.add_argument('--json-report', dest='json_report', action=StoreWritableFilePath, metavar='PATH',
-                                  help=self._json_report_help)
+        report_group.add_argument('--report', default='', dest='report_config', action=StoreReport, metavar='CONFIG',
+                                  help=self._report_help)
         # filter arguments
         filter_group = parser.add_argument_group('filter')
         filter_group.add_argument('-x', default='', dest='conditions', action=StoreConditions,
