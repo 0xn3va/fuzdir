@@ -17,6 +17,7 @@ class GrepConditionParser(ConditionParser):
             raise ConditionParserError(f'Invalid pattern {args}')
 
     def parse_area(self, area: str):
+        area = area.strip()
         if area and area not in (GrepAreas.headers, GrepAreas.body):
             raise ConditionParserError(f'Invalid filter condition area: {area}')
 

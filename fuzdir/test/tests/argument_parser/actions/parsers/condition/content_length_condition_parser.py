@@ -17,9 +17,9 @@ class ContentLengthConditionParserTest(unittest.TestCase):
         with self.assertRaises(ConditionParserError, msg='Check on parse arguments with incorrect range failed'):
             condition.parse_arguments(args='100-10')
 
-        arguments = condition.parse_arguments(args='10-100,10,')
+        arguments = condition.parse_arguments(args='10 - 100, 10,')
         self.assertListEqual(arguments, [(10, 100), (10, 10)],
-                             msg='Check on parse arguments with separator in the end line failed')
+                             msg='Check on parse arguments with separator in the end line and extra spaces failed')
 
     def test_parse_area(self):
         condition = ContentLengthConditionParser()

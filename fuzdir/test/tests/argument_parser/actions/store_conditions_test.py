@@ -21,3 +21,9 @@ class StoreConditionsTest(unittest.TestCase):
 
         with self.assertRaises(ArgumentManagerError, msg='Check on incorrect area for condition setup failed'):
             argument_manager.parse_args(args=['-x grep:area=args'])
+
+        argument_manager.parse_args(args=['-x ignore : grep : body = abc ', '-u http://localhost', '-w a'])
+        condition = argument_manager.conditions[0]
+        condition = (condition[0], condition[1], condition[2], condition[3].pattern)
+        self.assertTupleEqual((True, 'grep', 'body', ' abc '), condition,
+                              msg='Check on parse condition with an extra spaces failed')

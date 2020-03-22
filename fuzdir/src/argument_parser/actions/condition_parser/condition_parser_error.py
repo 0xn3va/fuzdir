@@ -1,3 +1,0 @@
-
-class ConditionParserError(Exception):
-    pass

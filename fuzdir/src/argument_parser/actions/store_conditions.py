@@ -23,29 +23,29 @@ class StoreConditions(argparse.Action):
 
     def __call__(self, parser, namespace, values, option_string=None):
         conditions = []
-        if values is not None:
-            values = values.strip().strip(self._conditions_separator)
-            for value in values.split(self._conditions_separator):
-                value, separator, args = value.partition(self._args_separator)
-                if not args:
-                    raise ArgumentManagerError(f'Invalid filter condition: {value}{separator}')
+        for value in values.strip(self._conditions_separator).split(self._conditions_separator):
+            value, separator, args = value.partition(self._args_separator)
+            if not args:
+                raise ArgumentManagerError(f'Invalid filter condition: {value}{separator}')
 
-                ignore = False
-                if value.startswith(f'{self._ignore_key}{self._handler_separator}'):
-                    _, _, value = value.partition(self._handler_separator)
-                    ignore = True
+            ignore = False
+            left, _, right = value.partition(self._handler_separator)
+            if left.strip() == self._ignore_key:
+                left, _, right = right.partition(self._handler_separator)
+                ignore = True
 
-                name, _, area = value.partition(self._handler_separator)
+            name = left.strip()
+            area = right
 
-                try:
-                    parser = self._parsers[name]()
-                    args = parser.parse_arguments(args)
-                    area = parser.parse_area(area)
-                except KeyError:
-                    raise ArgumentManagerError(f'Invalid filter condition name: {name}')
-                except ConditionParserError as e:
-                    raise ArgumentManagerError(str(e))
+            try:
+                parser = self._parsers[name]()
+                args = parser.parse_arguments(args)
+                area = parser.parse_area(area)
+            except KeyError:
+                raise ArgumentManagerError(f'Invalid filter condition name: {name}')
+            except ConditionParserError as e:
+                raise ArgumentManagerError(str(e))
 
-                conditions.append((ignore, name, area, args))
+            conditions.append((ignore, name, area, args))
 
         setattr(namespace, self.dest, conditions)
