@@ -157,7 +157,7 @@ You can write a fuzzing results to file with `--report` key.
 
 Usage format `<type>[:components]=<path>`
 - `type` report type,
-- `components` список компонент, которые должны быть включены в отчет,
+- `components` list of components that should be included in the report,
 - `path` путь до файла.
 
 Currently it supports the following components:
