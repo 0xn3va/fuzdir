@@ -122,7 +122,7 @@ class ArgumentManager:
         logging_group.add_argument('-v', '--verbose', dest='verbose', action='store_true', help=self._logging_help)
         # report arguments
         report_group = parser.add_argument_group('reports settings')
-        report_group.add_argument('--report', default='', dest='report_config', action=StoreReport, metavar='CONFIG',
+        report_group.add_argument('--report', dest='report_config', action=StoreReport, metavar='CONFIG',
                                   help=self._report_help)
         # filter arguments
         filter_group = parser.add_argument_group('filter')
